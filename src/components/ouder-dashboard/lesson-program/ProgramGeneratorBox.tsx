@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 interface ProgramGeneratorBoxProps {
   kindNiveau: number;
   moeilijkheidsgraad: 'makkelijker' | 'op_niveau' | 'uitdagend';
+  onKindNiveauChange: (value: number) => void;
   onMoeilijkheidsgradChange: (value: 'makkelijker' | 'op_niveau' | 'uitdagend') => void;
   onGenerateProgram: (settings: GenerationSettings) => void;
   isGenerating: boolean;
@@ -26,6 +27,7 @@ interface GenerationSettings {
 const ProgramGeneratorBox: React.FC<ProgramGeneratorBoxProps> = ({
   kindNiveau,
   moeilijkheidsgraad,
+  onKindNiveauChange,
   onMoeilijkheidsgradChange,
   onGenerateProgram,
   isGenerating
@@ -74,26 +76,28 @@ const ProgramGeneratorBox: React.FC<ProgramGeneratorBoxProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Niveau & Moeilijkheidsgraad */}
         <div className="space-y-6">
-          {/* Kind Niveau Indicator */}
+          {/* Kind Niveau Slider */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Huidig Niveau Kind</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-3">
+              Huidig Niveau Kind: <span className="text-maitje-blue font-bold">Niveau {kindNiveau}</span>
+            </label>
             <div className="bg-gradient-to-r from-red-100 via-yellow-100 to-green-100 p-4 rounded-lg">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Beginner</span>
-                <span className="text-sm text-gray-600">Gevorderd</span>
+                <span className="text-sm text-gray-600">Beginner (1)</span>
+                <span className="text-sm text-gray-600">Gevorderd (10)</span>
               </div>
-              <div className="relative h-3 bg-gray-200 rounded-full">
-                <div 
-                  className="absolute h-3 bg-gradient-to-r from-maitje-blue to-maitje-green rounded-full"
-                  style={{ width: `${(kindNiveau / 10) * 100}%` }}
-                ></div>
-                <div 
-                  className="absolute w-4 h-4 bg-white border-2 border-maitje-blue rounded-full -top-0.5"
-                  style={{ left: `calc(${(kindNiveau / 10) * 100}% - 8px)` }}
-                ></div>
-              </div>
-              <div className="text-center mt-2">
-                <span className="text-lg font-bold text-maitje-blue">Niveau {kindNiveau}</span>
+              <div className="relative">
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  value={kindNiveau}
+                  onChange={(e) => onKindNiveauChange(Number(e.target.value))}
+                  className="w-full h-3 bg-gray-200 rounded-full appearance-none cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right, #3B82F6 0%, #10B981 ${((kindNiveau - 1) / 9) * 100}%, #E5E7EB ${((kindNiveau - 1) / 9) * 100}%, #E5E7EB 100%)`
+                  }}
+                />
               </div>
             </div>
           </div>

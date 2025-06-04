@@ -83,6 +83,7 @@ const LesprogrammaTab = () => {
     selectedWeek,
     selectedYear,
     moeilijkheidsgraad,
+    kindNiveau,
     onGenerationStart: handleGenerationStart,
     onGenerationProgress: handleGenerationProgress,
     onGenerationComplete: handleGenerationComplete,
@@ -114,6 +115,7 @@ const LesprogrammaTab = () => {
       <ProgramGeneratorBox
         kindNiveau={kindNiveau}
         moeilijkheidsgraad={moeilijkheidsgraad}
+        onKindNiveauChange={setKindNiveau}
         onMoeilijkheidsgradChange={setMoeilijkheidsgraad}
         onGenerateProgram={programGenerator.generateProgramWithAI}
         isGenerating={isGenerating}

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Check, Edit, RefreshCw, Eye } from 'lucide-react';
+import { Check, Edit, RefreshCw, Eye, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface WeekProgramDisplayProps {
@@ -46,35 +46,54 @@ const WeekProgramDisplay: React.FC<WeekProgramDisplayProps> = ({
 
       {currentWeekData ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          {currentWeekData.program_data.map((dag: any, index: number) => (
-            <div key={index} className="bg-gray-50 rounded-lg p-4">
-              <h4 className="font-bold text-gray-800 mb-3 text-center">{dag.dag}</h4>
-              <div className="space-y-3">
-                {dag.oefeningen.map((oefening: any, oefeningIndex: number) => (
-                  <div 
-                    key={oefeningIndex} 
-                    className="bg-white p-3 rounded-lg border cursor-pointer hover:shadow-md transition-shadow"
-                    onClick={() => onDayClick(dag)}
-                  >
-                    <div className="font-semibold text-sm text-gray-800 mb-1">{oefening.titel}</div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className={`px-2 py-1 rounded-full ${
-                        oefening.type === 'rekenen' ? 'bg-blue-100 text-blue-800' :
-                        oefening.type === 'taal' ? 'bg-green-100 text-green-800' :
-                        'bg-purple-100 text-purple-800'
-                      }`}>
-                        {oefening.type}
-                      </span>
-                      <div className="flex items-center gap-1 text-gray-600">
+          {currentWeekData.program_data.map((dag: any, index: number) => {
+            const totalTime = dag.oefeningen?.reduce((sum: number, oef: any) => sum + (oef.tijdInMinuten || 0), 0) || 0;
+            
+            return (
+              <div key={index} className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-bold text-gray-800 mb-2 text-center">{dag.dag}</h4>
+                <div className="text-center mb-3">
+                  <div className="flex items-center justify-center gap-1 text-sm text-gray-600">
+                    <Clock className="w-4 h-4" />
+                    <span>{totalTime} min totaal</span>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  {dag.oefeningen?.map((oefening: any, oefeningIndex: number) => (
+                    <div 
+                      key={oefeningIndex} 
+                      className="bg-white p-3 rounded-lg border cursor-pointer hover:shadow-md transition-shadow"
+                      onClick={() => onDayClick(dag)}
+                    >
+                      <div className="font-semibold text-sm text-gray-800 mb-2">{oefening.titel}</div>
+                      <div className="flex items-center justify-between text-xs mb-2">
+                        <span className={`px-2 py-1 rounded-full ${
+                          oefening.type === 'rekenen' ? 'bg-blue-100 text-blue-800' :
+                          oefening.type === 'taal' ? 'bg-green-100 text-green-800' :
+                          'bg-purple-100 text-purple-800'
+                        }`}>
+                          {oefening.type}
+                        </span>
+                        <div className="flex items-center gap-1 text-gray-600">
+                          <Clock className="w-3 h-3" />
+                          {oefening.tijd}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 text-gray-600 text-xs">
                         <Eye className="w-3 h-3" />
                         {oefening.vragen?.length || 0} vragen
                       </div>
+                      {oefening.beschrijving && (
+                        <p className="text-xs text-gray-500 mt-1 italic">{oefening.beschrijving}</p>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  )) || (
+                    <div className="text-center text-gray-500 text-sm">Geen oefeningen</div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="text-center py-12 text-gray-500">
@@ -95,7 +114,7 @@ const WeekProgramDisplay: React.FC<WeekProgramDisplayProps> = ({
             }
           </p>
           <p className="text-blue-600 text-sm mt-1">
-            Klik op een dag om alle gegenereerde vragen en oefeningen te bekijken.
+            Klik op een dag om alle AI-gegenereerde vragen en oefeningen te bekijken.
           </p>
         </div>
       )}

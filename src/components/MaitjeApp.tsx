@@ -1,23 +1,20 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import AuthPage from './AuthPage';
-import ChildSelector from './ChildSelector';
 import KindDashboard from './KindDashboard';
 import RekenenModule from './RekenenModule';
 import LezenModule from './LezenModule';
 import EngelsModule from './EngelsModule';
 import OuderProfiel from './OuderProfiel';
-import { Child } from '@/types/database';
 
-export type AppView = 'child-selector' | 'dashboard' | 'rekenen' | 'lezen' | 'engels' | 'ouder';
+export type AppView = 'dashboard' | 'rekenen' | 'lezen' | 'engels' | 'ouder';
 
 const AppContent = () => {
   const { user, loading, signOut } = useAuth();
-  const [currentView, setCurrentView] = useState<AppView>('child-selector');
-  const [selectedChild, setSelectedChild] = useState<Child | null>(null);
+  const [currentView, setCurrentView] = React.useState<AppView>('dashboard');
 
-  console.log('Current view:', currentView, 'User:', user?.email, 'Selected child:', selectedChild?.name);
+  console.log('Current view:', currentView, 'User:', user?.email);
 
   if (loading) {
     return (
@@ -36,32 +33,16 @@ const AppContent = () => {
     return <AuthPage />;
   }
 
-  const handleChildSelect = (child: Child) => {
-    setSelectedChild(child);
-    setCurrentView('dashboard');
-  };
-
   const handleSignOut = async () => {
     await signOut();
-    setSelectedChild(null);
-    setCurrentView('child-selector');
+    setCurrentView('dashboard');
   };
 
   const renderView = () => {
     switch (currentView) {
-      case 'child-selector':
-        return (
-          <ChildSelector
-            selectedChild={selectedChild}
-            onChildSelect={handleChildSelect}
-            onSignOut={handleSignOut}
-          />
-        );
       case 'dashboard':
         return (
           <KindDashboard
-            childName={selectedChild?.name || 'Kind'}
-            selectedChild={selectedChild}
             onNavigate={setCurrentView}
             onSignOut={handleSignOut}
           />
@@ -93,8 +74,6 @@ const AppContent = () => {
       default:
         return (
           <KindDashboard
-            childName={selectedChild?.name || 'Kind'}
-            selectedChild={selectedChild}
             onNavigate={setCurrentView}
             onSignOut={handleSignOut}
           />

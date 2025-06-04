@@ -1,57 +1,22 @@
 
 import React, { useEffect, useState } from 'react';
-import { Book, Calculator, User, GraduationCap, ArrowLeft } from 'lucide-react';
+import { Book, Calculator, User, GraduationCap } from 'lucide-react';
 import { AppView } from './MaitjeApp';
-import { Child, DailyProgress } from '@/types/database';
 import { Helper } from '@/types/helpers';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import HelperSelector from './HelperSelector';
 import { useHelperTips } from '@/hooks/useHelperTips';
 
 interface Props {
-  childName: string;
-  selectedChild: Child | null;
   onNavigate: (view: AppView) => void;
   onSignOut: () => void;
 }
 
-const KindDashboard = ({ childName, selectedChild, onNavigate, onSignOut }: Props) => {
-  const [dailyProgress, setDailyProgress] = useState<DailyProgress | null>(null);
-  const [loading, setLoading] = useState(true);
+const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
+  const { profile } = useAuth();
   const [selectedHelper, setSelectedHelper] = useState<Helper | null>(null);
   
   const { currentTip, loading: tipLoading } = useHelperTips(selectedHelper);
-
-  useEffect(() => {
-    if (selectedChild) {
-      fetchDailyProgress();
-    }
-  }, [selectedChild]);
-
-  const fetchDailyProgress = async () => {
-    if (!selectedChild) return;
-
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      
-      const { data, error } = await supabase
-        .from('daily_progress')
-        .select('*')
-        .eq('child_id', selectedChild.id)
-        .eq('date', today)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching daily progress:', error);
-      } else {
-        setDailyProgress(data);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleHelperSelect = (helper: Helper) => {
     setSelectedHelper(helper);
@@ -71,22 +36,12 @@ const KindDashboard = ({ childName, selectedChild, onNavigate, onSignOut }: Prop
     }
   }, []);
 
-  const currentLevel = selectedChild?.current_level || 5;
-  const streakDays = dailyProgress?.streak_days || 0;
-  const todaysSessions = dailyProgress?.total_sessions || 0;
+  const childName = profile?.child_name || 'daar';
 
   return (
     <div className="min-h-screen p-6 max-w-4xl mx-auto">
-      {/* Header met terug knop en uitlog knop */}
-      <div className="flex justify-between items-center mb-6">
-        <button
-          onClick={() => onNavigate('child-selector')}
-          className="flex items-center gap-2 p-3 text-gray-600 hover:text-gray-800 transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="text-sm">Kind Wisselen</span>
-        </button>
-        
+      {/* Header met uitlog knop */}
+      <div className="flex justify-end items-center mb-6">
         <button
           onClick={onSignOut}
           className="flex items-center gap-2 p-3 text-gray-500 hover:text-gray-700 transition-colors"
@@ -111,16 +66,11 @@ const KindDashboard = ({ childName, selectedChild, onNavigate, onSignOut }: Prop
           {selectedHelper ? `${selectedHelper.name} helpt je vandaag met leren!` : 'Kies een hulpje om je te helpen met leren!'}
         </p>
         
-        {/* Leerlevel en Reeks */}
+        {/* Leerlevel */}
         <div className="flex justify-center gap-6 mb-4">
           <div className="bg-maitje-green text-white px-4 py-2 rounded-xl font-nunito font-bold">
-            Leerlevel: {currentLevel}
+            Leerlevel: 5
           </div>
-          {streakDays > 0 && (
-            <div className="bg-orange-500 text-white px-4 py-2 rounded-xl font-nunito font-bold">
-              🔥 {streakDays} dagen op rij!
-            </div>
-          )}
         </div>
 
         {/* Tip van het gekozen hulpje */}
@@ -138,31 +88,6 @@ const KindDashboard = ({ childName, selectedChild, onNavigate, onSignOut }: Prop
           </div>
         )}
       </div>
-
-      {/* Vandaag's Voortgang */}
-      {dailyProgress && (
-        <div className="maitje-card mb-8">
-          <h2 className="text-2xl font-nunito font-bold text-gray-800 mb-4 flex items-center gap-3">
-            📊 Voortgang van Vandaag
-          </h2>
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-maitje-green">{todaysSessions}</div>
-              <div className="text-sm text-gray-600">Sessies</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-maitje-blue">{dailyProgress.total_exercises}</div>
-              <div className="text-sm text-gray-600">Oefeningen</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-500">
-                {Math.round((dailyProgress.total_correct / dailyProgress.total_exercises) * 100) || 0}%
-              </div>
-              <div className="text-sm text-gray-600">Goed</div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Jouw mAItje Plan voor Vandaag */}
       <div className="maitje-card mb-8">

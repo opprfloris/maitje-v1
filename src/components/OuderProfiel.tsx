@@ -1,18 +1,22 @@
 
 import React, { useState } from 'react';
 import { User, Settings, Calendar, BarChart, MessageSquare, TrendingUp, ArrowLeft } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Props {
   onBack: () => void;
 }
 
 const OuderProfiel = ({ onBack }: Props) => {
+  const { profile, updateProfile } = useAuth();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pinCode, setPinCode] = useState('');
   const [pinError, setPinError] = useState(false);
   const [childLevel, setChildLevel] = useState('Groep 5');
   const [focusArea, setFocusArea] = useState('balanced');
   const [aiMessage, setAiMessage] = useState('');
+  const [childName, setChildName] = useState(profile?.child_name || '');
+  const [isUpdatingName, setIsUpdatingName] = useState(false);
 
   console.log('Ouder profiel loaded, authenticated:', isAuthenticated);
 
@@ -23,6 +27,22 @@ const OuderProfiel = ({ onBack }: Props) => {
     } else {
       setPinError(true);
       setPinCode('');
+    }
+  };
+
+  const handleUpdateChildName = async () => {
+    if (!childName.trim()) return;
+    
+    setIsUpdatingName(true);
+    try {
+      const { error } = await updateProfile({ child_name: childName.trim() });
+      if (error) {
+        console.error('Error updating child name:', error);
+      }
+    } catch (error) {
+      console.error('Error updating child name:', error);
+    } finally {
+      setIsUpdatingName(false);
     }
   };
 
@@ -160,6 +180,35 @@ const OuderProfiel = ({ onBack }: Props) => {
 
         {/* Rechterkant - 2 kolommen */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Kind naam instellen */}
+          <div className="maitje-card">
+            <div className="flex items-center gap-3 mb-4">
+              <User className="w-5 h-5 text-maitje-green" />
+              <h3 className="text-xl font-nunito font-bold text-gray-800">Kind Naam</h3>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Naam van uw kind</label>
+                <input
+                  type="text"
+                  value={childName}
+                  onChange={(e) => setChildName(e.target.value)}
+                  placeholder="Voer de naam van uw kind in"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-maitje-green focus:outline-none"
+                />
+              </div>
+              
+              <button 
+                onClick={handleUpdateChildName}
+                disabled={isUpdatingName || !childName.trim() || childName.trim() === profile?.child_name}
+                className="w-full maitje-button text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isUpdatingName ? 'Opslaan...' : 'Naam Opslaan'}
+              </button>
+            </div>
+          </div>
+
           {/* Kind instellingen */}
           <div className="maitje-card">
             <div className="flex items-center gap-3 mb-4">

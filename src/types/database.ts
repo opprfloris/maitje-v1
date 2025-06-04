@@ -1,4 +1,3 @@
-
 export type Profile = {
   id: string;
   email: string;
@@ -113,4 +112,40 @@ export type WeekProgramQuestion = {
   antwoord: string;
   type: 'multiple_choice' | 'open' | 'waar_onwaar';
   opties?: string[];
+};
+
+export type PromptVersion = {
+  id: string;
+  user_id: string;
+  version_name: string;
+  prompt_content: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type FeedbackSession = {
+  id: string;
+  user_id: string;
+  prompt_version_id: string;
+  session_name: string;
+  test_program_data: any[];
+  ai_analysis?: string;
+  status: 'in_progress' | 'completed' | 'analyzed';
+  created_at: string;
+  updated_at: string;
+};
+
+export type QuestionFeedback = {
+  id: string;
+  session_id: string;
+  question_text: string;
+  correct_answer: string;
+  day_name: string;
+  exercise_title: string;
+  subject_type: string;
+  feedback_category: 'good' | 'incorrect' | 'unclear' | 'too_easy' | 'too_hard';
+  user_feedback?: string;
+  ai_feedback?: string;
+  created_at: string;
 };

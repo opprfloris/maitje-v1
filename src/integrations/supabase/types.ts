@@ -252,6 +252,50 @@ export type Database = {
           },
         ]
       }
+      feedback_sessions: {
+        Row: {
+          ai_analysis: string | null
+          created_at: string
+          id: string
+          prompt_version_id: string
+          session_name: string
+          status: string
+          test_program_data: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_analysis?: string | null
+          created_at?: string
+          id?: string
+          prompt_version_id: string
+          session_name: string
+          status?: string
+          test_program_data?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_analysis?: string | null
+          created_at?: string
+          id?: string
+          prompt_version_id?: string
+          session_name?: string
+          status?: string
+          test_program_data?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_sessions_prompt_version_id_fkey"
+            columns: ["prompt_version_id"]
+            isOneToOne: false
+            referencedRelation: "prompt_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       generic_tips: {
         Row: {
           created_at: string
@@ -379,6 +423,86 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      prompt_versions: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          prompt_content: string
+          updated_at: string
+          user_id: string
+          version_name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          prompt_content: string
+          updated_at?: string
+          user_id: string
+          version_name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          prompt_content?: string
+          updated_at?: string
+          user_id?: string
+          version_name?: string
+        }
+        Relationships: []
+      }
+      question_feedback: {
+        Row: {
+          ai_feedback: string | null
+          correct_answer: string
+          created_at: string
+          day_name: string
+          exercise_title: string
+          feedback_category: string
+          id: string
+          question_text: string
+          session_id: string
+          subject_type: string
+          user_feedback: string | null
+        }
+        Insert: {
+          ai_feedback?: string | null
+          correct_answer: string
+          created_at?: string
+          day_name: string
+          exercise_title: string
+          feedback_category: string
+          id?: string
+          question_text: string
+          session_id: string
+          subject_type: string
+          user_feedback?: string | null
+        }
+        Update: {
+          ai_feedback?: string | null
+          correct_answer?: string
+          created_at?: string
+          day_name?: string
+          exercise_title?: string
+          feedback_category?: string
+          id?: string
+          question_text?: string
+          session_id?: string
+          subject_type?: string
+          user_feedback?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_feedback_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "feedback_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       specific_tips: {
         Row: {

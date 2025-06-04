@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -79,6 +78,31 @@ const LesprogrammaTab = () => {
     setIsDayPopupOpen(true);
   };
 
+  const deleteCurrentProgram = async () => {
+    if (!user || !currentWeekData) return;
+
+    if (!confirm(`Weet je zeker dat je het programma voor week ${selectedWeek} wilt verwijderen?`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('weekly_programs')
+        .delete()
+        .eq('id', currentWeekData.id);
+
+      if (error) {
+        throw error;
+      }
+
+      toast.success('Weekprogramma verwijderd');
+      loadWeekProgrammas();
+    } catch (error) {
+      console.error('Error deleting program:', error);
+      toast.error('Fout bij verwijderen programma');
+    }
+  };
+
   const programGenerator = useProgramGenerator({
     selectedWeek,
     selectedYear,
@@ -119,6 +143,8 @@ const LesprogrammaTab = () => {
         onMoeilijkheidsgradChange={setMoeilijkheidsgraad}
         onGenerateProgram={programGenerator.generateProgramWithAI}
         isGenerating={isGenerating}
+        onDeleteProgram={deleteCurrentProgram}
+        showDeleteButton={!!currentWeekData}
       />
 
       <WeekProgramDisplay

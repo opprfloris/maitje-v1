@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.10';
@@ -23,7 +22,9 @@ serve(async (req) => {
       useAIPersonalization,
       theme,
       userId,
-      kindGroep
+      kindGroep,
+      promptVersionId,
+      isTestMode = false
     } = await req.json();
 
     console.log('Generating week program with params:', {
@@ -33,12 +34,47 @@ serve(async (req) => {
       timePerDay,
       subjects,
       theme,
-      kindGroep
+      kindGroep,
+      promptVersionId,
+      isTestMode
     });
 
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
       throw new Error('OpenAI API key niet gevonden in secrets');
+    }
+
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Get custom prompt if specified
+    let customPrompt = null;
+    if (promptVersionId) {
+      const { data: promptData, error: promptError } = await supabase
+        .from('prompt_versions')
+        .select('prompt_content')
+        .eq('id', promptVersionId)
+        .single();
+
+      if (!promptError && promptData) {
+        customPrompt = promptData.prompt_content;
+      }
+    }
+
+    // If no custom prompt, get the active prompt for this user
+    if (!customPrompt) {
+      const { data: activePromptData, error: activePromptError } = await supabase
+        .from('prompt_versions')
+        .select('prompt_content')
+        .eq('user_id', userId)
+        .eq('is_active', true)
+        .single();
+
+      if (!activePromptError && activePromptData) {
+        customPrompt = activePromptData.prompt_content;
+      }
     }
 
     // Format theme for display
@@ -49,8 +85,8 @@ serve(async (req) => {
 
     const formattedTheme = formatTheme(theme);
 
-    // Generate AI prompt with time management and theme logic
-    const systemPrompt = `Je bent een AI-assistent die weekprogramma's genereert voor Nederlandse basisschoolkinderen in groep ${kindGroep}. 
+    // Use custom prompt or fallback to default
+    const systemPrompt = customPrompt || `Je bent een AI-assistent die weekprogramma's genereert voor Nederlandse basisschoolkinderen in groep ${kindGroep}. 
 
 BELANGRIJKE TIJD REGELS:
 - Elk onderdeel moet MINIMAAL 15 minuten duren
@@ -58,7 +94,7 @@ BELANGRIJKE TIJD REGELS:
 - 15 min = 5-7 vragen, 30 min = 10-15 vragen, 45 min = 15-20 vragen
 
 THEMA REGELS:
-${formattedTheme ? `Het thema is: "${formattedTheme}"` : 'Geen specifiek thema'}
+${formattedThema ? `Het thema is: "${formattedThema}"` : 'Geen specifiek thema'}
 
 WELKE ONDERDELEN KRIJGEN THEMA:
 ✅ Thema toepassen op: Verhalen Rekenen, Begrijpend Lezen, Woordenschat, Engels Conversatie, Spelling in context
@@ -71,11 +107,13 @@ Engels: Woordenschat, Conversatie, Luisteren
 
 Genereer een weekprogramma (maandag t/m vrijdag) met realistische tijdsschattingen en juiste thema toepassing.`;
 
+    // Generate AI prompt with time management and theme logic
     const userPrompt = `Genereer een weekprogramma voor groep ${kindGroep} met moeilijkheidsgraad "${moeilijkheidsgraad}".
 
 Totale tijd per dag: ${timePerDay} minuten
 Vakken: ${Object.entries(subjects).filter(([_, subject]) => subject.enabled).map(([key, _]) => key).join(', ')}
 ${formattedTheme ? `Thema: ${formattedTheme}` : ''}
+${isTestMode ? '\n*** DIT IS EEN TEST GENERATIE - GEBRUIK EXTRA AANDACHT VOOR KWALITEIT ***' : ''}
 
 Geef terug in deze exacte JSON structuur:
 [
@@ -103,7 +141,7 @@ Geef terug in deze exacte JSON structuur:
 
 Zorg voor realistische tijdsschattingen en juiste thema toepassing!`;
 
-    console.log('Sending request to OpenAI...');
+    console.log('Sending request to OpenAI with custom prompt...', customPrompt ? 'Using custom prompt' : 'Using default prompt');
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -133,10 +171,12 @@ Zorg voor realistische tijdsschattingen en juiste thema toepassing!`;
 
     const content = aiResponse.choices[0].message.content;
     
-    // Parse JSON response
+    // Parse JSON response - handle markdown code blocks
     let programData;
     try {
-      programData = JSON.parse(content);
+      // Remove markdown code block markers if present
+      const cleanContent = content.replace(/```json\n?/g, '').replace(/\n?```/g, '');
+      programData = JSON.parse(cleanContent);
     } catch (parseError) {
       console.error('JSON parse error:', parseError);
       console.error('Raw content:', content);
@@ -153,12 +193,12 @@ Zorg voor realistische tijdsschattingen en juiste thema toepassing!`;
       })) || []
     }));
 
-    console.log('Program generated successfully with theme:', formattedTheme);
+    console.log('Program generated successfully with theme:', formattedThema, 'Test mode:', isTestMode);
 
     return new Response(JSON.stringify({ 
       success: true, 
       programData: validatedProgram,
-      theme: formattedTheme
+      theme: formattedThema
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

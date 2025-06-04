@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import AuthPage from './AuthPage';
@@ -86,7 +87,6 @@ const AppContent = () => {
       case 'ouder':
         return (
           <OuderProfiel
-            selectedChild={selectedChild}
             onBack={() => setCurrentView('dashboard')}
             onSignOut={handleSignOut}
           />

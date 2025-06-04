@@ -88,7 +88,6 @@ const AppContent = () => {
         return (
           <OuderProfiel
             onBack={() => setCurrentView('dashboard')}
-            onSignOut={handleSignOut}
           />
         );
       default:

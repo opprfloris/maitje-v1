@@ -225,6 +225,48 @@ export type Database = {
           },
         ]
       }
+      generic_tips: {
+        Row: {
+          created_at: string
+          id: number
+          text_template: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          text_template: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          text_template?: string
+        }
+        Relationships: []
+      }
+      helpers: {
+        Row: {
+          avatar_emoji: string
+          character_description: string
+          created_at: string
+          id: number
+          name: string
+        }
+        Insert: {
+          avatar_emoji: string
+          character_description: string
+          created_at?: string
+          id?: number
+          name: string
+        }
+        Update: {
+          avatar_emoji?: string
+          character_description?: string
+          created_at?: string
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -254,6 +296,35 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      specific_tips: {
+        Row: {
+          created_at: string
+          helper_id: number
+          id: number
+          text: string
+        }
+        Insert: {
+          created_at?: string
+          helper_id: number
+          id?: number
+          text: string
+        }
+        Update: {
+          created_at?: string
+          helper_id?: number
+          id?: number
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "specific_tips_helper_id_fkey"
+            columns: ["helper_id"]
+            isOneToOne: false
+            referencedRelation: "helpers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

@@ -3,7 +3,10 @@ import React, { useEffect, useState } from 'react';
 import { Book, Calculator, User, GraduationCap, ArrowLeft } from 'lucide-react';
 import { AppView } from './MaitjeApp';
 import { Child, DailyProgress } from '@/types/database';
+import { Helper } from '@/types/helpers';
 import { supabase } from '@/integrations/supabase/client';
+import HelperSelector from './HelperSelector';
+import { useHelperTips } from '@/hooks/useHelperTips';
 
 interface Props {
   childName: string;
@@ -15,6 +18,9 @@ interface Props {
 const KindDashboard = ({ childName, selectedChild, onNavigate, onSignOut }: Props) => {
   const [dailyProgress, setDailyProgress] = useState<DailyProgress | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedHelper, setSelectedHelper] = useState<Helper | null>(null);
+  
+  const { currentTip, loading: tipLoading } = useHelperTips(selectedHelper);
 
   useEffect(() => {
     if (selectedChild) {
@@ -47,6 +53,24 @@ const KindDashboard = ({ childName, selectedChild, onNavigate, onSignOut }: Prop
     }
   };
 
+  const handleHelperSelect = (helper: Helper) => {
+    setSelectedHelper(helper);
+    // Store in localStorage for persistence
+    localStorage.setItem('selectedHelper', JSON.stringify(helper));
+  };
+
+  // Load helper from localStorage on mount
+  useEffect(() => {
+    const storedHelper = localStorage.getItem('selectedHelper');
+    if (storedHelper) {
+      try {
+        setSelectedHelper(JSON.parse(storedHelper));
+      } catch (error) {
+        console.error('Error parsing stored helper:', error);
+      }
+    }
+  }, []);
+
   const currentLevel = selectedChild?.current_level || 5;
   const streakDays = dailyProgress?.streak_days || 0;
   const todaysSessions = dailyProgress?.total_sessions || 0;
@@ -72,18 +96,19 @@ const KindDashboard = ({ childName, selectedChild, onNavigate, onSignOut }: Prop
         </button>
       </div>
 
-      {/* Header met welkomstboodschap en Uli de uil */}
+      {/* Header met welkomstboodschap en Helper selector */}
       <div className="text-center mb-8">
         <div className="flex items-center justify-center mb-6">
-          <div className="w-24 h-24 bg-maitje-blue rounded-full flex items-center justify-center text-4xl animate-bounce-gentle">
-            🦉
-          </div>
+          <HelperSelector
+            selectedHelper={selectedHelper}
+            onHelperSelect={handleHelperSelect}
+          />
         </div>
         <h1 className="text-4xl font-nunito font-bold text-gray-800 mb-2">
           Hallo {childName}! 👋
         </h1>
         <p className="text-xl text-gray-600 font-nunito mb-4">
-          Uli de uil helpt je vandaag met leren!
+          {selectedHelper ? `${selectedHelper.name} helpt je vandaag met leren!` : 'Kies een hulpje om je te helpen met leren!'}
         </p>
         
         {/* Leerlevel en Reeks */}
@@ -98,12 +123,20 @@ const KindDashboard = ({ childName, selectedChild, onNavigate, onSignOut }: Prop
           )}
         </div>
 
-        {/* Tip van Uli */}
-        <div className="bg-maitje-blue bg-opacity-20 border-2 border-maitje-blue rounded-xl p-4 mb-6">
-          <p className="text-gray-700 font-nunito">
-            💡 <strong>Wist-je-datje van Uli:</strong> Als je elke dag 10 minuten oefent, word je heel snel beter in rekenen!
-          </p>
-        </div>
+        {/* Tip van het gekozen hulpje */}
+        {selectedHelper && (
+          <div className="bg-maitje-blue bg-opacity-20 border-2 border-maitje-blue rounded-xl p-4 mb-6">
+            {tipLoading ? (
+              <p className="text-gray-700 font-nunito">
+                💭 <strong>{selectedHelper.name}</strong> bedenkt een tip voor je...
+              </p>
+            ) : (
+              <p className="text-gray-700 font-nunito">
+                💡 <strong>Wist-je-datje van {selectedHelper.name}:</strong> {currentTip}
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Vandaag's Voortgang */}

@@ -409,6 +409,129 @@ export type Database = {
           },
         ]
       }
+      user_ai_config: {
+        Row: {
+          api_key_encrypted: string | null
+          content_filter: string | null
+          created_at: string
+          id: string
+          language: string | null
+          selected_model: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          api_key_encrypted?: string | null
+          content_filter?: string | null
+          created_at?: string
+          id?: string
+          language?: string | null
+          selected_model?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          api_key_encrypted?: string | null
+          content_filter?: string | null
+          created_at?: string
+          id?: string
+          language?: string | null
+          selected_model?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_interests: {
+        Row: {
+          created_at: string
+          id: string
+          interest_name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          interest_name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          interest_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_privacy_settings: {
+        Row: {
+          created_at: string
+          data_collection_analytics: boolean | null
+          data_collection_personalization: boolean | null
+          id: string
+          level_change_notifications: boolean | null
+          updated_at: string
+          user_id: string
+          weekly_reports: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          data_collection_analytics?: boolean | null
+          data_collection_personalization?: boolean | null
+          id?: string
+          level_change_notifications?: boolean | null
+          updated_at?: string
+          user_id: string
+          weekly_reports?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          data_collection_analytics?: boolean | null
+          data_collection_personalization?: boolean | null
+          id?: string
+          level_change_notifications?: boolean | null
+          updated_at?: string
+          user_id?: string
+          weekly_reports?: boolean | null
+        }
+        Relationships: []
+      }
+      weekly_programs: {
+        Row: {
+          created_at: string
+          difficulty_level: string | null
+          id: string
+          program_data: Json | null
+          status: string | null
+          updated_at: string
+          user_id: string
+          week_number: number
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          difficulty_level?: string | null
+          id?: string
+          program_data?: Json | null
+          status?: string | null
+          updated_at?: string
+          user_id: string
+          week_number: number
+          year: number
+        }
+        Update: {
+          created_at?: string
+          difficulty_level?: string | null
+          id?: string
+          program_data?: Json | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+          week_number?: number
+          year?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

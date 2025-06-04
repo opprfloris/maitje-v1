@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import AuthPage from './AuthPage';
@@ -69,21 +68,18 @@ const AppContent = () => {
       case 'rekenen':
         return (
           <RekenenModule
-            selectedChild={selectedChild}
             onBack={() => setCurrentView('dashboard')}
           />
         );
       case 'lezen':
         return (
           <LezenModule
-            selectedChild={selectedChild}
             onBack={() => setCurrentView('dashboard')}
           />
         );
       case 'engels':
         return (
           <EngelsModule
-            selectedChild={selectedChild}
             onBack={() => setCurrentView('dashboard')}
           />
         );

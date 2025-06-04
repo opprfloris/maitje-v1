@@ -52,6 +52,6 @@ export type DailyProgress = {
   total_correct: number;
   subjects_practiced: string[];
   streak_days: number;
-  achievements: any[];
+  achievements: any; // Changed from any[] to any to match Json type from database
   created_at: string;
 };

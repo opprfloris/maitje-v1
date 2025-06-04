@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Check, Edit, RefreshCw, Eye, Clock } from 'lucide-react';
+import { Check, Edit, RefreshCw, Eye, Clock, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface WeekProgramDisplayProps {
@@ -23,7 +23,15 @@ const WeekProgramDisplay: React.FC<WeekProgramDisplayProps> = ({
   return (
     <div className="maitje-card">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-nunito font-bold text-gray-800">Week {selectedWeek} Programma</h3>
+        <div>
+          <h3 className="text-xl font-nunito font-bold text-gray-800">Week {selectedWeek} Programma</h3>
+          {currentWeekData?.theme && (
+            <div className="flex items-center gap-2 mt-1">
+              <Palette className="w-4 h-4 text-purple-600" />
+              <span className="text-sm font-medium text-purple-600">{currentWeekData.theme}</span>
+            </div>
+          )}
+        </div>
         <div className="flex gap-2">
           {currentWeekData?.status === 'draft' && (
             <Button onClick={onPublishProgram} size="sm">
@@ -76,7 +84,7 @@ const WeekProgramDisplay: React.FC<WeekProgramDisplayProps> = ({
                         </span>
                         <div className="flex items-center gap-1 text-gray-600">
                           <Clock className="w-3 h-3" />
-                          {oefening.tijd}
+                          {oefening.tijdInMinuten || 15} min
                         </div>
                       </div>
                       <div className="flex items-center gap-1 text-gray-600 text-xs">
@@ -113,6 +121,11 @@ const WeekProgramDisplay: React.FC<WeekProgramDisplayProps> = ({
               currentWeekData.status === 'draft' ? 'Concept - kan nog bewerkt worden' : 'Concept'
             }
           </p>
+          {currentWeekData.theme && (
+            <p className="text-blue-600 text-sm mt-1">
+              <strong>Thema:</strong> {currentWeekData.theme}
+            </p>
+          )}
           <p className="text-blue-600 text-sm mt-1">
             Klik op een dag om alle AI-gegenereerde vragen en oefeningen te bekijken.
           </p>

@@ -15,7 +15,7 @@ const LesprogrammaTab = () => {
   const [selectedWeek, setSelectedWeek] = useState(getCurrentWeek());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [moeilijkheidsgraad, setMoeilijkheidsgraad] = useState<'makkelijker' | 'op_niveau' | 'uitdagend'>('op_niveau');
-  const [kindNiveau, setKindNiveau] = useState(5);
+  const [kindGroep, setKindGroep] = useState(5);
   const [weekProgrammas, setWeekProgrammas] = useState<any[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
@@ -83,7 +83,7 @@ const LesprogrammaTab = () => {
     selectedWeek,
     selectedYear,
     moeilijkheidsgraad,
-    kindNiveau,
+    kindGroep,
     onGenerationStart: handleGenerationStart,
     onGenerationProgress: handleGenerationProgress,
     onGenerationComplete: handleGenerationComplete,
@@ -113,9 +113,9 @@ const LesprogrammaTab = () => {
       />
 
       <ProgramGeneratorBox
-        kindNiveau={kindNiveau}
+        kindGroep={kindGroep}
         moeilijkheidsgraad={moeilijkheidsgraad}
-        onKindNiveauChange={setKindNiveau}
+        onKindGroepChange={setKindGroep}
         onMoeilijkheidsgradChange={setMoeilijkheidsgraad}
         onGenerateProgram={programGenerator.generateProgramWithAI}
         isGenerating={isGenerating}
@@ -129,9 +129,9 @@ const LesprogrammaTab = () => {
         onReplaceProgram={() => programGenerator.generateProgramWithAI({
           timePerDay: 30,
           subjects: {
-            rekenen: { enabled: true, subtopics: [] },
-            taal: { enabled: true, subtopics: [] },
-            engels: { enabled: true, subtopics: [] }
+            rekenen: { enabled: true, subtopics: ['Tafels', 'Verhalen Rekenen', 'Hoofdrekenen'] },
+            taal: { enabled: true, subtopics: ['Begrijpend Lezen', 'Woordenschat'] },
+            engels: { enabled: true, subtopics: ['Woordenschat', 'Conversatie'] }
           },
           useAIPersonalization: true,
           theme: ''

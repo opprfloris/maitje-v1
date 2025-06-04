@@ -503,6 +503,7 @@ export type Database = {
           id: string
           program_data: Json | null
           status: string | null
+          theme: string | null
           updated_at: string
           user_id: string
           week_number: number
@@ -514,6 +515,7 @@ export type Database = {
           id?: string
           program_data?: Json | null
           status?: string | null
+          theme?: string | null
           updated_at?: string
           user_id: string
           week_number: number
@@ -525,6 +527,7 @@ export type Database = {
           id?: string
           program_data?: Json | null
           status?: string | null
+          theme?: string | null
           updated_at?: string
           user_id?: string
           week_number?: number

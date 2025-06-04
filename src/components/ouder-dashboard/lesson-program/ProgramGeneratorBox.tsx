@@ -1,39 +1,22 @@
 
 import React, { useState } from 'react';
-import { Wand2, Clock, BookOpen, Calculator, Globe, Sparkles, Settings, ChevronDown, ChevronRight } from 'lucide-react';
+import { Wand2, Settings, Clock, Brain, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+import { GenerationSettings } from '@/hooks/useProgramGenerator';
 
 interface ProgramGeneratorBoxProps {
-  kindNiveau: number;
+  kindGroep: number;
   moeilijkheidsgraad: 'makkelijker' | 'op_niveau' | 'uitdagend';
-  onKindNiveauChange: (value: number) => void;
-  onMoeilijkheidsgradChange: (value: 'makkelijker' | 'op_niveau' | 'uitdagend') => void;
+  onKindGroepChange: (groep: number) => void;
+  onMoeilijkheidsgradChange: (graad: 'makkelijker' | 'op_niveau' | 'uitdagend') => void;
   onGenerateProgram: (settings: GenerationSettings) => void;
   isGenerating: boolean;
 }
 
-interface GenerationSettings {
-  timePerDay: number;
-  subjects: {
-    rekenen: { enabled: boolean; subtopics: string[] };
-    taal: { enabled: boolean; subtopics: string[] };
-    engels: { enabled: boolean; subtopics: string[] };
-  };
-  useAIPersonalization: boolean;
-  theme: string;
-}
-
-const allSubtopics = {
-  rekenen: ['Tafels', 'Hoofdrekenen', 'Breuken', 'Meetkunde', 'Woordsommen', 'Getalbegrip'],
-  taal: ['Spelling', 'Begrijpend lezen', 'Woordenschat', 'Grammatica', 'Schrijven', 'Spreken'],
-  engels: ['Woorden', 'Zinnen', 'Uitspraak', 'Conversatie', 'Luisteren', 'Lezen']
-};
-
 const ProgramGeneratorBox: React.FC<ProgramGeneratorBoxProps> = ({
-  kindNiveau,
+  kindGroep,
   moeilijkheidsgraad,
-  onKindNiveauChange,
+  onKindGroepChange,
   onMoeilijkheidsgradChange,
   onGenerateProgram,
   isGenerating
@@ -42,251 +25,200 @@ const ProgramGeneratorBox: React.FC<ProgramGeneratorBoxProps> = ({
   const [subjects, setSubjects] = useState({
     rekenen: { 
       enabled: true, 
-      subtopics: ['Tafels', 'Hoofdrekenen'] 
+      subtopics: ['Tafels', 'Breuken', 'Hoofdrekenen', 'Verhalen Rekenen', 'Meetkunde'] 
     },
     taal: { 
       enabled: true, 
-      subtopics: ['Spelling', 'Begrijpend lezen'] 
+      subtopics: ['Begrijpend Lezen', 'Woordenschat', 'Spelling', 'Grammatica'] 
     },
     engels: { 
       enabled: true, 
-      subtopics: ['Woorden', 'Zinnen'] 
+      subtopics: ['Woordenschat', 'Conversatie', 'Luisteren'] 
     }
   });
   const [useAIPersonalization, setUseAIPersonalization] = useState(true);
   const [theme, setTheme] = useState('');
-  const [expandedSubjects, setExpandedSubjects] = useState<string[]>([]);
 
-  const handleSubjectChange = (subject: keyof typeof subjects, enabled: boolean) => {
-    setSubjects(prev => ({
-      ...prev,
-      [subject]: { ...prev[subject], enabled }
-    }));
-  };
-
-  const handleSubtopicChange = (subject: keyof typeof subjects, subtopic: string, checked: boolean) => {
+  const handleSubjectToggle = (subject: string) => {
     setSubjects(prev => ({
       ...prev,
       [subject]: {
         ...prev[subject],
-        subtopics: checked 
-          ? [...prev[subject].subtopics, subtopic]
-          : prev[subject].subtopics.filter(s => s !== subtopic)
+        enabled: !prev[subject].enabled
       }
     }));
   };
 
-  const toggleSubjectExpanded = (subject: string) => {
-    setExpandedSubjects(prev => 
-      prev.includes(subject) 
-        ? prev.filter(s => s !== subject)
-        : [...prev, subject]
-    );
-  };
-
   const handleGenerate = () => {
-    onGenerateProgram({
+    const settings: GenerationSettings = {
       timePerDay,
       subjects,
       useAIPersonalization,
       theme
-    });
+    };
+    onGenerateProgram(settings);
   };
 
-  const subjectConfig = [
-    { key: 'rekenen', name: 'Rekenen', icon: Calculator, color: 'blue' },
-    { key: 'taal', name: 'Taal', icon: BookOpen, color: 'green' },
-    { key: 'engels', name: 'Engels', icon: Globe, color: 'purple' }
-  ];
+  const getGroepNaam = (groep: number) => {
+    return `Groep ${groep}`;
+  };
 
   return (
     <div className="maitje-card">
       <div className="flex items-center gap-3 mb-6">
-        <Wand2 className="w-6 h-6 text-purple-500" />
-        <h3 className="text-xl font-nunito font-bold text-gray-800">Genereer een week programma</h3>
+        <Wand2 className="w-6 h-6 text-maitje-blue" />
+        <div>
+          <h3 className="text-xl font-nunito font-bold text-gray-800">AI Weekprogramma Generator</h3>
+          <p className="text-sm text-gray-600">Genereer een gepersonaliseerd weekprogramma voor je kind</p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Niveau & Moeilijkheidsgraad */}
-        <div className="space-y-6">
-          {/* Kind Niveau Slider */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Basis Instellingen */}
+        <div className="space-y-4">
+          <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+            <Settings className="w-4 h-4" />
+            Basis Instellingen
+          </h4>
+          
+          {/* Groep Selector */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
-              Huidig Niveau Kind: <span className="text-maitje-blue font-bold">Niveau {kindNiveau}</span>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Groep
             </label>
-            <div className="bg-gradient-to-r from-red-100 via-yellow-100 to-green-100 p-4 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Beginner (1)</span>
-                <span className="text-sm text-gray-600">Gevorderd (10)</span>
-              </div>
-              <div className="relative">
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={kindNiveau}
-                  onChange={(e) => onKindNiveauChange(Number(e.target.value))}
-                  className="w-full h-3 bg-gray-200 rounded-full appearance-none cursor-pointer"
-                  style={{
-                    background: `linear-gradient(to right, #3B82F6 0%, #10B981 ${((kindNiveau - 1) / 9) * 100}%, #E5E7EB ${((kindNiveau - 1) / 9) * 100}%, #E5E7EB 100%)`
-                  }}
-                />
-              </div>
-            </div>
+            <select
+              value={kindGroep}
+              onChange={(e) => onKindGroepChange(Number(e.target.value))}
+              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maitje-blue focus:border-transparent"
+            >
+              {[1, 2, 3, 4, 5, 6, 7, 8].map(groep => (
+                <option key={groep} value={groep}>
+                  {getGroepNaam(groep)}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Moeilijkheidsgraad */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Moeilijkheidsgraad Instelling</label>
-            <div className="space-y-2">
-              {[
-                { value: 'makkelijker', label: 'Makkelijker', desc: 'Voor extra ondersteuning', color: 'green' },
-                { value: 'op_niveau', label: 'Op Niveau', desc: 'Passend bij huidige kunnen', color: 'blue' },
-                { value: 'uitdagend', label: 'Uitdagend', desc: 'Voor snellere progressie', color: 'purple' }
-              ].map((option) => (
-                <label key={option.value} className="flex items-center gap-3 p-2 border rounded-lg cursor-pointer hover:bg-gray-50">
-                  <input
-                    type="radio"
-                    name="moeilijkheidsgraad"
-                    value={option.value}
-                    checked={moeilijkheidsgraad === option.value}
-                    onChange={(e) => onMoeilijkheidsgradChange(e.target.value as any)}
-                    className="w-4 h-4 text-maitje-blue"
-                  />
-                  <div>
-                    <div className="font-semibold text-gray-800 text-sm">{option.label}</div>
-                    <div className="text-xs text-gray-600">{option.desc}</div>
-                  </div>
-                </label>
-              ))}
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Moeilijkheidsgraad
+            </label>
+            <select
+              value={moeilijkheidsgraad}
+              onChange={(e) => onMoeilijkheidsgradChange(e.target.value as any)}
+              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maitje-blue focus:border-transparent"
+            >
+              <option value="makkelijker">Makkelijker dan groepsniveau</option>
+              <option value="op_niveau">Op groepsniveau</option>
+              <option value="uitdagend">Uitdagender dan groepsniveau</option>
+            </select>
+          </div>
+
+          {/* Tijd per dag */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              Tijd per dag (minuten)
+            </label>
+            <div className="flex items-center gap-4">
+              <input
+                type="range"
+                min="15"
+                max="90"
+                step="15"
+                value={timePerDay}
+                onChange={(e) => setTimePerDay(Number(e.target.value))}
+                className="flex-1"
+              />
+              <span className="text-lg font-semibold text-maitje-blue min-w-[60px]">
+                {timePerDay} min
+              </span>
             </div>
           </div>
         </div>
 
-        {/* AI Instellingen */}
-        <div className="space-y-6">
-          {/* Tijd per dag */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              <Clock className="inline w-4 h-4 mr-1" />
-              Tijd per dag (minuten)
-            </label>
-            <select 
-              value={timePerDay}
-              onChange={(e) => setTimePerDay(Number(e.target.value))}
-              className="w-full p-2 border rounded-lg"
-            >
-              <option value={15}>15 minuten</option>
-              <option value={30}>30 minuten</option>
-              <option value={45}>45 minuten</option>
-              <option value={60}>60 minuten</option>
-            </select>
-          </div>
+        {/* Geavanceerde Instellingen */}
+        <div className="space-y-4">
+          <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+            <Brain className="w-4 h-4" />
+            Vakgebieden
+          </h4>
 
-          {/* Vakgebieden */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">Vakgebieden & Onderdelen</label>
-            <div className="space-y-3">
-              {subjectConfig.map(({ key, name, icon: Icon, color }) => (
-                <div key={key} className="border rounded-lg overflow-hidden">
-                  <div className="flex items-center gap-3 p-3 bg-gray-50">
-                    <Icon className={`w-5 h-5 text-${color}-500`} />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <Checkbox 
-                          checked={subjects[key as keyof typeof subjects].enabled}
-                          onCheckedChange={(checked) => handleSubjectChange(key as keyof typeof subjects, !!checked)}
-                        />
-                        <span className="font-semibold">{name}</span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => toggleSubjectExpanded(key)}
-                      className="p-1 hover:bg-gray-200 rounded"
-                    >
-                      {expandedSubjects.includes(key) ? 
-                        <ChevronDown className="w-4 h-4" /> : 
-                        <ChevronRight className="w-4 h-4" />
-                      }
-                    </button>
-                  </div>
-                  
-                  {expandedSubjects.includes(key) && (
-                    <div className="p-3 bg-white border-t">
-                      <div className="text-xs text-gray-600 mb-2">Selecteer onderdelen:</div>
-                      <div className="grid grid-cols-2 gap-2">
-                        {allSubtopics[key as keyof typeof allSubtopics].map((subtopic) => (
-                          <label key={subtopic} className="flex items-center gap-2 text-sm">
-                            <Checkbox
-                              checked={subjects[key as keyof typeof subjects].subtopics.includes(subtopic)}
-                              onCheckedChange={(checked) => handleSubtopicChange(key as keyof typeof subjects, subtopic, !!checked)}
-                              disabled={!subjects[key as keyof typeof subjects].enabled}
-                            />
-                            <span className={!subjects[key as keyof typeof subjects].enabled ? 'text-gray-400' : ''}>{subtopic}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* AI Personalisatie */}
-          <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-            <Checkbox 
-              checked={useAIPersonalization}
-              onCheckedChange={(checked) => setUseAIPersonalization(!!checked)}
-            />
-            <div>
-              <span className="font-semibold text-blue-800">mAItje personalisatie</span>
-              <p className="text-xs text-blue-600">Laat AI niveau en eerdere prestaties meenemen</p>
-            </div>
+          {/* Vakken selectie */}
+          <div className="space-y-3">
+            {Object.entries(subjects).map(([key, subject]) => (
+              <div key={key} className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id={key}
+                  checked={subject.enabled}
+                  onChange={() => handleSubjectToggle(key)}
+                  className="w-4 h-4 text-maitje-blue focus:ring-maitje-blue border-gray-300 rounded"
+                />
+                <label htmlFor={key} className="flex-1 text-sm font-medium text-gray-700 capitalize">
+                  {key === 'rekenen' ? 'Rekenen' : key === 'taal' ? 'Taal' : 'Engels'}
+                </label>
+                <span className="text-xs text-gray-500">
+                  {subject.subtopics.length} onderdelen
+                </span>
+              </div>
+            ))}
           </div>
 
           {/* Thema */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              <Sparkles className="inline w-4 h-4 mr-1" />
+            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+              <Palette className="w-4 h-4" />
               Thema (optioneel)
             </label>
             <input
               type="text"
               value={theme}
               onChange={(e) => setTheme(e.target.value)}
-              placeholder="bijv. Piraten, Ruimte, Voetbal..."
-              className="w-full p-2 border rounded-lg"
+              placeholder="bijv. piraten, ruimte, dieren..."
+              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maitje-blue focus:border-transparent"
             />
-            <p className="text-xs text-gray-600 mt-1">AI past oefeningen aan met thematische context waar mogelijk</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Thema wordt toegepast op verhalen rekenen, begrijpend lezen en woordenschat
+            </p>
+          </div>
+
+          {/* AI Personalisatie */}
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="ai-personalization"
+              checked={useAIPersonalization}
+              onChange={(e) => setUseAIPersonalization(e.target.checked)}
+              className="w-4 h-4 text-maitje-blue focus:ring-maitje-blue border-gray-300 rounded"
+            />
+            <label htmlFor="ai-personalization" className="text-sm text-gray-700">
+              AI Personalisatie gebruiken
+            </label>
           </div>
         </div>
       </div>
 
-      {/* Genereer Knop */}
-      <div className="mt-6 pt-6 border-t">
+      {/* Generate Button */}
+      <div className="mt-6 pt-4 border-t border-gray-200">
         <Button
           onClick={handleGenerate}
-          disabled={isGenerating || !Object.values(subjects).some(s => s.enabled && s.subtopics.length > 0)}
-          className="w-full h-12 text-lg font-semibold"
+          disabled={isGenerating}
+          className="w-full bg-maitje-blue hover:bg-maitje-blue/90 text-white py-3 text-lg font-semibold"
         >
           {isGenerating ? (
-            <>
-              <Settings className="w-5 h-5 mr-2 animate-spin" />
-              mAItje genereert programma...
-            </>
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              Programma genereren...
+            </div>
           ) : (
-            <>
-              <Wand2 className="w-5 h-5 mr-2" />
+            <div className="flex items-center gap-2">
+              <Wand2 className="w-5 h-5" />
               Genereer AI Weekprogramma
-            </>
+            </div>
           )}
         </Button>
-        {!Object.values(subjects).some(s => s.enabled && s.subtopics.length > 0) && (
-          <p className="text-xs text-red-600 mt-2 text-center">
-            Selecteer minstens één vakgebied met onderdelen
-          </p>
-        )}
       </div>
     </div>
   );

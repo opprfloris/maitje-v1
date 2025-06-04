@@ -18,7 +18,7 @@ interface UseProgramGeneratorProps {
   selectedWeek: number;
   selectedYear: number;
   moeilijkheidsgraad: 'makkelijker' | 'op_niveau' | 'uitdagend';
-  kindNiveau: number;
+  kindGroep: number;
   onGenerationStart: () => void;
   onGenerationProgress: (progress: number, step: string) => void;
   onGenerationComplete: () => void;
@@ -29,7 +29,7 @@ export const useProgramGenerator = ({
   selectedWeek,
   selectedYear,
   moeilijkheidsgraad,
-  kindNiveau,
+  kindGroep,
   onGenerationStart,
   onGenerationProgress,
   onGenerationComplete,
@@ -56,7 +56,7 @@ export const useProgramGenerator = ({
     
     try {
       // Progress tracking
-      onGenerationProgress(10, 'Voorbereiden van AI generatie...');
+      onGenerationProgress(10, 'AI generatie voorbereiden...');
       
       console.log('Starting AI generation with settings:', settings);
       
@@ -71,7 +71,7 @@ export const useProgramGenerator = ({
           useAIPersonalization: settings.useAIPersonalization,
           theme: settings.theme,
           userId: user.id,
-          kindNiveau
+          kindGroep
         }
       });
 
@@ -80,7 +80,7 @@ export const useProgramGenerator = ({
         throw new Error(`AI generatie fout: ${functionError.message}`);
       }
 
-      onGenerationProgress(60, 'AI genereert vragen en oefeningen...');
+      onGenerationProgress(60, 'Programma genereren...');
 
       if (!aiResponse?.success) {
         console.error('AI response error:', aiResponse);
@@ -96,7 +96,7 @@ export const useProgramGenerator = ({
 
       onGenerationProgress(90, 'Programma opslaan...');
 
-      // Save the AI-generated program to database
+      // Save the AI-generated program to database with UPSERT (overwrite if exists)
       const weekProgramData = {
         user_id: user.id,
         year: selectedYear,
@@ -104,12 +104,17 @@ export const useProgramGenerator = ({
         status: 'draft',
         difficulty_level: moeilijkheidsgraad,
         program_data: aiResponse.programData,
+        theme: aiResponse.theme || settings.theme,
         updated_at: new Date().toISOString()
       };
 
+      // Use upsert to overwrite existing programs
       const { error: saveError } = await supabase
         .from('weekly_programs')
-        .upsert(weekProgramData);
+        .upsert(weekProgramData, { 
+          onConflict: 'user_id,year,week_number',
+          ignoreDuplicates: false 
+        });
 
       if (saveError) {
         console.error('Database save error:', saveError);

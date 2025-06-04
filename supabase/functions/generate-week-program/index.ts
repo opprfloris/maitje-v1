@@ -8,138 +8,100 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-const supabase = createClient(supabaseUrl, supabaseKey);
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key is niet geconfigureerd in Supabase secrets');
-    }
-
-    const { 
-      selectedWeek, 
-      selectedYear, 
-      moeilijkheidsgraad, 
-      timePerDay, 
-      subjects, 
-      useAIPersonalization, 
+    const {
+      selectedWeek,
+      selectedYear,
+      moeilijkheidsgraad,
+      timePerDay,
+      subjects,
+      useAIPersonalization,
       theme,
       userId,
-      kindNiveau 
+      kindGroep
     } = await req.json();
 
-    console.log('Generating week program with AI for week:', selectedWeek, 'year:', selectedYear);
-    console.log('Settings:', { moeilijkheidsgraad, timePerDay, subjects, theme, kindNiveau });
+    console.log('Generating week program with params:', {
+      selectedWeek,
+      selectedYear,
+      moeilijkheidsgraad,
+      timePerDay,
+      subjects,
+      theme,
+      kindGroep
+    });
 
-    // Get user's previous performance data if personalization is enabled
-    let personalizationData = '';
-    if (useAIPersonalization && userId) {
-      const { data: progressData } = await supabase
-        .from('daily_progress')
-        .select('*')
-        .eq('child_id', userId)
-        .order('date', { ascending: false })
-        .limit(10);
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key niet gevonden in secrets');
+    }
 
-      if (progressData && progressData.length > 0) {
-        const totalSessions = progressData.reduce((sum, day) => sum + day.total_sessions, 0);
-        const totalCorrect = progressData.reduce((sum, day) => sum + day.total_correct, 0);
-        const totalExercises = progressData.reduce((sum, day) => sum + day.total_exercises, 0);
-        const accuracy = totalExercises > 0 ? Math.round((totalCorrect / totalExercises) * 100) : 0;
-        
-        personalizationData = `
-Recente prestaties van het kind:
-- Gemiddelde nauwkeurigheid: ${accuracy}%
-- Totaal aantal sessies afgelopen 10 dagen: ${totalSessions}
-- Sterkste vakgebieden: ${progressData[0]?.subjects_practiced?.join(', ') || 'Nog geen data'}
-`;
+    // Format theme for display
+    const formatTheme = (themeInput: string) => {
+      if (!themeInput || themeInput.trim() === '') return null;
+      return themeInput.charAt(0).toUpperCase() + themeInput.slice(1).toLowerCase() + ' Avontuur Thema';
+    };
+
+    const formattedTheme = formatTheme(theme);
+
+    // Generate AI prompt with time management and theme logic
+    const systemPrompt = `Je bent een AI-assistent die weekprogramma's genereert voor Nederlandse basisschoolkinderen in groep ${kindGroep}. 
+
+BELANGRIJKE TIJD REGELS:
+- Elk onderdeel moet MINIMAAL 15 minuten duren
+- Bereken aantal vragen op basis van tijd: ~2-3 minuten per vraag
+- 15 min = 5-7 vragen, 30 min = 10-15 vragen, 45 min = 15-20 vragen
+
+THEMA REGELS:
+${formattedTheme ? `Het thema is: "${formattedTheme}"` : 'Geen specifiek thema'}
+
+WELKE ONDERDELEN KRIJGEN THEMA:
+✅ Thema toepassen op: Verhalen Rekenen, Begrijpend Lezen, Woordenschat, Engels Conversatie, Spelling in context
+❌ GEEN thema op: Tafels, Breuken, Hoofdrekenen, Grammatica regels, Engels grammatica
+
+ONDERWERPEN PER GROEP ${kindGroep}:
+Rekenen: Tafels, Breuken, Hoofdrekenen, Verhalen Rekenen, Meetkunde
+Taal: Begrijpend Lezen, Woordenschat, Spelling, Grammatica
+Engels: Woordenschat, Conversatie, Luisteren
+
+Genereer een weekprogramma (maandag t/m vrijdag) met realistische tijdsschattingen en juiste thema toepassing.`;
+
+    const userPrompt = `Genereer een weekprogramma voor groep ${kindGroep} met moeilijkheidsgraad "${moeilijkheidsgraad}".
+
+Totale tijd per dag: ${timePerDay} minuten
+Vakken: ${Object.entries(subjects).filter(([_, subject]) => subject.enabled).map(([key, _]) => key).join(', ')}
+${formattedTheme ? `Thema: ${formattedTheme}` : ''}
+
+Geef terug in deze exacte JSON structuur:
+[
+  {
+    "dag": "Maandag",
+    "oefeningen": [
+      {
+        "titel": "Titel van oefening",
+        "type": "rekenen/taal/engels",
+        "tijd": "15 min",
+        "tijdInMinuten": 15,
+        "beschrijving": "Korte beschrijving",
+        "vragen": [
+          {
+            "vraag": "De vraag tekst",
+            "antwoord": "Het juiste antwoord",
+            "type": "multiple_choice/open/waar_onwaar",
+            "opties": ["optie1", "optie2", "optie3", "optie4"] // alleen bij multiple_choice
+          }
+        ]
       }
-    }
+    ]
+  }
+]
 
-    // Build enabled subjects list with subtopics
-    const enabledSubjects = Object.entries(subjects)
-      .filter(([_, subject]) => subject.enabled)
-      .map(([name, subject]) => ({
-        name,
-        subtopics: subject.subtopics.length > 0 ? subject.subtopics : getDefaultSubtopics(name)
-      }));
-
-    if (enabledSubjects.length === 0) {
-      throw new Error('Geen vakgebieden geselecteerd');
-    }
-
-    // Create AI prompt for week program generation
-    const systemPrompt = `Je bent mAItje, een AI assistent die educatieve weekprogramma's maakt voor Nederlandse basisschoolkinderen.
-
-BELANGRIJKE INSTRUCTIES:
-- Genereer een weekprogramma voor 5 dagen (maandag t/m vrijdag)
-- Elk dag moet EXACT ${timePerDay} minuten aan oefeningen bevatten
-- Niveau kind: ${kindNiveau}/10 (1=beginner, 10=gevorderd)
-- Moeilijkheidsgraad: ${moeilijkheidsgraad}
-- Geselecteerde vakgebieden: ${enabledSubjects.map(s => `${s.name} (${s.subtopics.join(', ')})`).join('; ')}
-${theme ? `- Thema: "${theme}" - integreer dit thema in alle oefeningen waar mogelijk` : ''}
-
-${personalizationData}
-
-MOEILIJKHEIDSNIVEAUS:
-- "makkelijker": Maak oefeningen 1-2 niveaus onder het kind niveau
-- "op_niveau": Maak oefeningen passend bij het kind niveau  
-- "uitdagend": Maak oefeningen 1-2 niveaus boven het kind niveau
-
-VAKGEBIED RICHTLIJNEN:
-- Rekenen: Gebruik geselecteerde subtopics, pas toe op Nederlandse basisschool curriculum
-- Taal: Nederlandse spelling, begrijpend lezen, woordenschat, grammatica
-- Engels: Basis Engels voor Nederlandse kinderen, woordenschat, zinsbouw
-
-Genereer voor elke oefening 3-5 specifieke vragen met:
-- Duidelijke Nederlandse vraagstelling
-- Correct antwoord
-- 2-3 helpende hints in het Nederlands
-
-Zorg dat de tijdsverdeling realistisch is en uitkomt op ${timePerDay} minuten per dag.`;
-
-    const userPrompt = `Genereer een weekprogramma voor week ${selectedWeek}, ${selectedYear}.
-
-Antwoord in exact deze JSON structuur:
-{
-  "dagen": [
-    {
-      "dag": "Maandag",
-      "oefeningen": [
-        {
-          "titel": "Oefening titel",
-          "type": "rekenen|taal|engels",
-          "tijd": "X min",
-          "tijdInMinuten": X,
-          "beschrijving": "Korte beschrijving van de oefening",
-          "vragen": [
-            {
-              "vraag": "De vraag tekst",
-              "antwoord": "Het correcte antwoord",
-              "hints": ["Hint 1", "Hint 2"]
-            }
-          ]
-        }
-      ]
-    }
-  ]
-}
-
-Zorg ervoor dat:
-- Elke dag exact ${timePerDay} minuten bevat (som van alle tijdInMinuten)
-- Vragen passen bij niveau ${kindNiveau} en moeilijkheidsgraad "${moeilijkheidsgraad}"
-- ${theme ? `Thema "${theme}" wordt geïntegreerd waar mogelijk` : 'Geen specifiek thema'}
-- Er variatie is in oefentypen per dag
-- Vragen realistisch en leerzaam zijn voor Nederlandse basisschoolleerlingen
-- Gebruik alleen geselecteerde subtopics: ${enabledSubjects.map(s => s.subtopics.join(', ')).join('; ')}`;
+Zorg voor realistische tijdsschattingen en juiste thema toepassing!`;
 
     console.log('Sending request to OpenAI...');
 
@@ -155,92 +117,60 @@ Zorg ervoor dat:
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.7,
         max_tokens: 4000,
+        temperature: 0.7,
       }),
     });
 
     if (!response.ok) {
-      const errorData = await response.text();
-      console.error('OpenAI API error:', response.status, errorData);
-      throw new Error(`OpenAI API fout (${response.status}): ${errorData}`);
+      const errorText = await response.text();
+      console.error('OpenAI API error:', response.status, errorText);
+      throw new Error(`OpenAI API fout: ${response.status}`);
     }
 
     const aiResponse = await response.json();
-    const generatedContent = aiResponse.choices[0].message.content;
-    
-    console.log('AI Generated content:', generatedContent);
+    console.log('OpenAI response received');
 
-    // Parse the JSON response from AI
+    const content = aiResponse.choices[0].message.content;
+    
+    // Parse JSON response
     let programData;
     try {
-      // Extract JSON from the response (in case AI adds extra text)
-      const jsonMatch = generatedContent.match(/\{[\s\S]*\}/);
-      const jsonString = jsonMatch ? jsonMatch[0] : generatedContent;
-      programData = JSON.parse(jsonString);
+      programData = JSON.parse(content);
     } catch (parseError) {
-      console.error('Error parsing AI response:', parseError);
-      console.error('Raw AI response:', generatedContent);
-      throw new Error('AI response kon niet worden geparseerd als JSON');
+      console.error('JSON parse error:', parseError);
+      console.error('Raw content:', content);
+      throw new Error('Ongeldige AI response format');
     }
 
-    // Validate and ensure time constraints are met
-    const validatedProgram = validateAndAdjustProgram(programData.dagen, timePerDay);
+    // Validate and clean up the program data
+    const validatedProgram = programData.map((dag: any) => ({
+      ...dag,
+      oefeningen: dag.oefeningen?.map((oef: any) => ({
+        ...oef,
+        tijdInMinuten: oef.tijdInMinuten || parseInt(oef.tijd) || 15,
+        vragen: oef.vragen?.slice(0, 20) || [] // Limit questions
+      })) || []
+    }));
 
-    console.log('Program successfully generated and validated');
+    console.log('Program generated successfully with theme:', formattedTheme);
 
     return new Response(JSON.stringify({ 
       success: true, 
       programData: validatedProgram,
-      message: 'Week programma succesvol gegenereerd met AI'
+      theme: formattedTheme
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    console.error('Error in generate-week-program function:', error);
+    console.error('Error in generate-week-program:', error);
     return new Response(JSON.stringify({ 
       success: false, 
-      error: error.message || 'Er is een fout opgetreden bij het genereren van het programma'
+      error: error.message 
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });
-
-function getDefaultSubtopics(subject: string): string[] {
-  switch (subject) {
-    case 'rekenen':
-      return ['Tafels', 'Hoofdrekenen', 'Breuken', 'Meetkunde'];
-    case 'taal':
-      return ['Spelling', 'Begrijpend lezen', 'Woordenschat', 'Grammatica'];
-    case 'engels':
-      return ['Woorden', 'Zinnen', 'Uitspraak', 'Conversatie'];
-    default:
-      return [];
-  }
-}
-
-function validateAndAdjustProgram(dagen: any[], targetTimePerDay: number) {
-  return dagen.map(dag => {
-    // Calculate total time for this day
-    const totalTime = dag.oefeningen.reduce((sum: number, oef: any) => sum + (oef.tijdInMinuten || 0), 0);
-    
-    // If time doesn't match target, adjust proportionally
-    if (totalTime !== targetTimePerDay && totalTime > 0) {
-      const adjustmentFactor = targetTimePerDay / totalTime;
-      
-      dag.oefeningen = dag.oefeningen.map((oef: any) => {
-        const adjustedTime = Math.max(1, Math.round((oef.tijdInMinuten || 0) * adjustmentFactor));
-        return {
-          ...oef,
-          tijdInMinuten: adjustedTime,
-          tijd: `${adjustedTime} min`
-        };
-      });
-    }
-    
-    return dag;
-  });
-}

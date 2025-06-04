@@ -1,5 +1,4 @@
 
-
 export type Profile = {
   id: string;
   email: string;
@@ -82,3 +81,36 @@ export type PlanItemProgress = {
   updated_at: string;
 };
 
+export type WeekProgram = {
+  id: string;
+  user_id: string;
+  week_number: number;
+  year: number;
+  status: 'draft' | 'published' | 'completed';
+  difficulty_level: string;
+  theme?: string;
+  program_data: any[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type WeekProgramDay = {
+  dag: string;
+  oefeningen: WeekProgramExercise[];
+};
+
+export type WeekProgramExercise = {
+  titel: string;
+  type: 'rekenen' | 'taal' | 'engels';
+  tijd: string;
+  tijdInMinuten: number;
+  beschrijving?: string;
+  vragen: WeekProgramQuestion[];
+};
+
+export type WeekProgramQuestion = {
+  vraag: string;
+  antwoord: string;
+  type: 'multiple_choice' | 'open' | 'waar_onwaar';
+  opties?: string[];
+};

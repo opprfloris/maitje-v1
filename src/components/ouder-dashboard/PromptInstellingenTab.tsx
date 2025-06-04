@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -68,10 +67,11 @@ const PromptInstellingenTab = () => {
         return;
       }
 
-      // Type assertion to handle the test_program_data type conversion
+      // Type assertion to handle the test_program_data and status type conversion
       const typedData: FeedbackSession[] = (data || []).map(session => ({
         ...session,
-        test_program_data: Array.isArray(session.test_program_data) ? session.test_program_data : []
+        test_program_data: Array.isArray(session.test_program_data) ? session.test_program_data : [],
+        status: session.status as 'in_progress' | 'completed' | 'analyzed'
       }));
 
       setFeedbackSessions(typedData);

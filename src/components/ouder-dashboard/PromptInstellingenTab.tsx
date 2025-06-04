@@ -68,7 +68,13 @@ const PromptInstellingenTab = () => {
         return;
       }
 
-      setFeedbackSessions(data || []);
+      // Type assertion to handle the test_program_data type conversion
+      const typedData: FeedbackSession[] = (data || []).map(session => ({
+        ...session,
+        test_program_data: Array.isArray(session.test_program_data) ? session.test_program_data : []
+      }));
+
+      setFeedbackSessions(typedData);
     } catch (error) {
       console.error('Error loading feedback sessions:', error);
     }

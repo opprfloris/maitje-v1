@@ -44,7 +44,13 @@ const FeedbackAnalysis: React.FC<FeedbackAnalysisProps> = ({
         throw error;
       }
 
-      setSessionFeedback(data || []);
+      // Type assertion to handle the feedback_category type conversion
+      const typedData: QuestionFeedback[] = (data || []).map(item => ({
+        ...item,
+        feedback_category: item.feedback_category as 'good' | 'incorrect' | 'unclear' | 'too_easy' | 'too_hard'
+      }));
+
+      setSessionFeedback(typedData);
       setSelectedSession(session);
       
       // Parse existing AI analysis if available

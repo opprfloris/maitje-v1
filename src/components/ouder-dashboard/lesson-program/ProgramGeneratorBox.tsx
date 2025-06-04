@@ -27,7 +27,11 @@ const ProgramGeneratorBox: React.FC<ProgramGeneratorBoxProps> = ({
   showDeleteButton = false
 }) => {
   const [timePerDay, setTimePerDay] = useState(30);
-  const [subjects, setSubjects] = useState<Record<string, SubjectData>>({
+  const [subjects, setSubjects] = useState<{
+    rekenen: SubjectData;
+    taal: SubjectData;
+    engels: SubjectData;
+  }>({
     rekenen: { 
       enabled: true, 
       subtopics: ['Tafels', 'Verhalen Rekenen', 'Hoofdrekenen'] 
@@ -48,8 +52,8 @@ const ProgramGeneratorBox: React.FC<ProgramGeneratorBoxProps> = ({
     setSubjects(prev => ({
       ...prev,
       [subject]: {
-        ...prev[subject],
-        enabled: !prev[subject].enabled
+        ...prev[subject as keyof typeof prev],
+        enabled: !prev[subject as keyof typeof prev].enabled
       }
     }));
   };
@@ -58,10 +62,10 @@ const ProgramGeneratorBox: React.FC<ProgramGeneratorBoxProps> = ({
     setSubjects(prev => ({
       ...prev,
       [subject]: {
-        ...prev[subject],
-        subtopics: prev[subject].subtopics.includes(subtopic)
-          ? prev[subject].subtopics.filter(t => t !== subtopic)
-          : [...prev[subject].subtopics, subtopic]
+        ...prev[subject as keyof typeof prev],
+        subtopics: prev[subject as keyof typeof prev].subtopics.includes(subtopic)
+          ? prev[subject as keyof typeof prev].subtopics.filter(t => t !== subtopic)
+          : [...prev[subject as keyof typeof prev].subtopics, subtopic]
       }
     }));
   };

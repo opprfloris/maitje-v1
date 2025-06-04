@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { HelpCircle, ChevronDown, ChevronRight } from 'lucide-react';
@@ -88,15 +87,15 @@ const FAQDialog = ({ isOpen, onClose }: FAQDialogProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-white">
+        <DialogHeader className="bg-white">
           <DialogTitle className="flex items-center gap-2 text-2xl">
             <HelpCircle className="w-6 h-6 text-purple-600" />
             Veelgestelde Vragen (FAQ)
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4">
+        <div className="space-y-4 bg-white">
           <div className="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-400">
             <p className="text-purple-800">
               💡 Vind snel antwoorden op de meest gestelde vragen over mAItje. Staat uw vraag er niet tussen? 

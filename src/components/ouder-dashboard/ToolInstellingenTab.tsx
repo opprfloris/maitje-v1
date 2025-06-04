@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Settings, Mail, Bug, Shield, HelpCircle, Key, Save } from 'lucide-react';
+import { Settings, Mail, Bug, Shield, HelpCircle, Key, Save, TestTube, CheckCircle, XCircle, Loader } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -9,13 +9,15 @@ import FAQDialog from './FAQDialog';
 
 const ToolInstellingenTab = () => {
   const { user, profile } = useAuth();
-  const [selectedModel, setSelectedModel] = useState('gpt-4-mini');
+  const [selectedModel, setSelectedModel] = useState('gpt-4o-mini');
   const [apiKey, setApiKey] = useState('');
   const [contentFilter, setContentFilter] = useState('medium');
   const [language, setLanguage] = useState('nl');
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showFAQ, setShowFAQ] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isTestingAPI, setIsTestingAPI] = useState(false);
+  const [apiTestResult, setApiTestResult] = useState<{status: 'success' | 'error' | null, message: string}>({status: null, message: ''});
 
   console.log('Tool instellingen tab loaded, user:', user?.email);
 
@@ -40,7 +42,7 @@ const ToolInstellingenTab = () => {
       }
 
       if (data) {
-        setSelectedModel(data.selected_model || 'gpt-4-mini');
+        setSelectedModel(data.selected_model || 'gpt-4o-mini');
         setApiKey(data.api_key_encrypted || '');
         setContentFilter(data.content_filter || 'medium');
         setLanguage(data.language || 'nl');
@@ -73,11 +75,61 @@ const ToolInstellingenTab = () => {
       }
 
       toast.success('AI instellingen opgeslagen');
+      setApiTestResult({status: null, message: ''});
     } catch (error) {
       console.error('Error saving AI config:', error);
       toast.error('Fout bij opslaan AI instellingen');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const testOpenAIConnection = async () => {
+    if (!apiKey.trim()) {
+      toast.error('Voer eerst je OpenAI API key in');
+      return;
+    }
+
+    setIsTestingAPI(true);
+    setApiTestResult({status: null, message: ''});
+
+    try {
+      // First save the API key to Supabase secrets
+      await saveAIConfig();
+      
+      // Wait a moment for the config to be saved
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const { data, error } = await supabase.functions.invoke('test-openai-connection', {
+        body: {}
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data.success) {
+        setApiTestResult({
+          status: 'success', 
+          message: `✅ ${data.message}\nTest response: "${data.testResponse}"\nModel: ${data.model}`
+        });
+        toast.success('OpenAI API test succesvol!');
+      } else {
+        setApiTestResult({
+          status: 'error', 
+          message: `❌ ${data.error}\n${data.details || ''}`
+        });
+        toast.error(`API test gefaald: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Error testing OpenAI API:', error);
+      setApiTestResult({
+        status: 'error', 
+        message: `❌ Fout bij testen API verbinding: ${error.message}`
+      });
+      toast.error('Fout bij testen API verbinding');
+    } finally {
+      setIsTestingAPI(false);
     }
   };
 
@@ -133,8 +185,8 @@ const ToolInstellingenTab = () => {
               onChange={(e) => setSelectedModel(e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:border-maitje-green focus:outline-none"
             >
-              <option value="gpt-4-mini">GPT-4-Mini (Aanbevolen)</option>
-              <option value="gpt-4">GPT-4 (Premium)</option>
+              <option value="gpt-4o-mini">GPT-4o-Mini (Aanbevolen)</option>
+              <option value="gpt-4o">GPT-4o (Premium)</option>
               <option value="gpt-3.5-turbo">GPT-3.5-Turbo (Basis)</option>
             </select>
           </div>
@@ -181,14 +233,56 @@ const ToolInstellingenTab = () => {
             </select>
           </div>
 
-          <button
-            onClick={saveAIConfig}
-            disabled={isLoading}
-            className="w-full maitje-button flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            <Save className="w-4 h-4" />
-            {isLoading ? 'Opslaan...' : 'AI Instellingen Opslaan'}
-          </button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <button
+              onClick={saveAIConfig}
+              disabled={isLoading}
+              className="maitje-button flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <Save className="w-4 h-4" />
+              {isLoading ? 'Opslaan...' : 'AI Instellingen Opslaan'}
+            </button>
+
+            <button
+              onClick={testOpenAIConnection}
+              disabled={isTestingAPI || !apiKey.trim()}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isTestingAPI ? (
+                <Loader className="w-4 h-4 animate-spin" />
+              ) : (
+                <TestTube className="w-4 h-4" />
+              )}
+              {isTestingAPI ? 'Testen...' : 'Test API Verbinding'}
+            </button>
+          </div>
+
+          {/* API Test Result */}
+          {apiTestResult.status && (
+            <div className={`p-3 rounded-lg border-l-4 ${
+              apiTestResult.status === 'success' 
+                ? 'bg-green-50 border-green-400' 
+                : 'bg-red-50 border-red-400'
+            }`}>
+              <div className="flex items-center gap-2 mb-2">
+                {apiTestResult.status === 'success' ? (
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                ) : (
+                  <XCircle className="w-5 h-5 text-red-600" />
+                )}
+                <span className={`font-semibold ${
+                  apiTestResult.status === 'success' ? 'text-green-800' : 'text-red-800'
+                }`}>
+                  API Test Resultaat
+                </span>
+              </div>
+              <pre className={`text-sm whitespace-pre-wrap ${
+                apiTestResult.status === 'success' ? 'text-green-700' : 'text-red-700'
+              }`}>
+                {apiTestResult.message}
+              </pre>
+            </div>
+          )}
         </div>
       </div>
 

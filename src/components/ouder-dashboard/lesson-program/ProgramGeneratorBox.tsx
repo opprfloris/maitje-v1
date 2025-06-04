@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Wand2, Clock, BookOpen, Calculator, Globe, Sparkles, Settings } from 'lucide-react';
+import { Wand2, Clock, BookOpen, Calculator, Globe, Sparkles, Settings, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -24,6 +24,12 @@ interface GenerationSettings {
   theme: string;
 }
 
+const allSubtopics = {
+  rekenen: ['Tafels', 'Hoofdrekenen', 'Breuken', 'Meetkunde', 'Woordsommen', 'Getalbegrip'],
+  taal: ['Spelling', 'Begrijpend lezen', 'Woordenschat', 'Grammatica', 'Schrijven', 'Spreken'],
+  engels: ['Woorden', 'Zinnen', 'Uitspraak', 'Conversatie', 'Luisteren', 'Lezen']
+};
+
 const ProgramGeneratorBox: React.FC<ProgramGeneratorBoxProps> = ({
   kindNiveau,
   moeilijkheidsgraad,
@@ -36,25 +42,46 @@ const ProgramGeneratorBox: React.FC<ProgramGeneratorBoxProps> = ({
   const [subjects, setSubjects] = useState({
     rekenen: { 
       enabled: true, 
-      subtopics: ['Tafels', 'Hoofdrekenen', 'Breuken', 'Meetkunde'] 
+      subtopics: ['Tafels', 'Hoofdrekenen'] 
     },
     taal: { 
       enabled: true, 
-      subtopics: ['Spelling', 'Begrijpend lezen', 'Woordenschat', 'Grammatica'] 
+      subtopics: ['Spelling', 'Begrijpend lezen'] 
     },
     engels: { 
       enabled: true, 
-      subtopics: ['Woorden', 'Zinnen', 'Uitspraak', 'Conversatie'] 
+      subtopics: ['Woorden', 'Zinnen'] 
     }
   });
   const [useAIPersonalization, setUseAIPersonalization] = useState(true);
   const [theme, setTheme] = useState('');
+  const [expandedSubjects, setExpandedSubjects] = useState<string[]>([]);
 
   const handleSubjectChange = (subject: keyof typeof subjects, enabled: boolean) => {
     setSubjects(prev => ({
       ...prev,
       [subject]: { ...prev[subject], enabled }
     }));
+  };
+
+  const handleSubtopicChange = (subject: keyof typeof subjects, subtopic: string, checked: boolean) => {
+    setSubjects(prev => ({
+      ...prev,
+      [subject]: {
+        ...prev[subject],
+        subtopics: checked 
+          ? [...prev[subject].subtopics, subtopic]
+          : prev[subject].subtopics.filter(s => s !== subtopic)
+      }
+    }));
+  };
+
+  const toggleSubjectExpanded = (subject: string) => {
+    setExpandedSubjects(prev => 
+      prev.includes(subject) 
+        ? prev.filter(s => s !== subject)
+        : [...prev, subject]
+    );
   };
 
   const handleGenerate = () => {
@@ -65,6 +92,12 @@ const ProgramGeneratorBox: React.FC<ProgramGeneratorBoxProps> = ({
       theme
     });
   };
+
+  const subjectConfig = [
+    { key: 'rekenen', name: 'Rekenen', icon: Calculator, color: 'blue' },
+    { key: 'taal', name: 'Taal', icon: BookOpen, color: 'green' },
+    { key: 'engels', name: 'Engels', icon: Globe, color: 'purple' }
+  ];
 
   return (
     <div className="maitje-card">
@@ -152,49 +185,51 @@ const ProgramGeneratorBox: React.FC<ProgramGeneratorBoxProps> = ({
 
           {/* Vakgebieden */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">Vakgebieden</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-3">Vakgebieden & Onderdelen</label>
             <div className="space-y-3">
-              <div className="flex items-center gap-3 p-3 border rounded-lg">
-                <Calculator className="w-5 h-5 text-blue-500" />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <Checkbox 
-                      checked={subjects.rekenen.enabled}
-                      onCheckedChange={(checked) => handleSubjectChange('rekenen', !!checked)}
-                    />
-                    <span className="font-semibold">Rekenen</span>
+              {subjectConfig.map(({ key, name, icon: Icon, color }) => (
+                <div key={key} className="border rounded-lg overflow-hidden">
+                  <div className="flex items-center gap-3 p-3 bg-gray-50">
+                    <Icon className={`w-5 h-5 text-${color}-500`} />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <Checkbox 
+                          checked={subjects[key as keyof typeof subjects].enabled}
+                          onCheckedChange={(checked) => handleSubjectChange(key as keyof typeof subjects, !!checked)}
+                        />
+                        <span className="font-semibold">{name}</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => toggleSubjectExpanded(key)}
+                      className="p-1 hover:bg-gray-200 rounded"
+                    >
+                      {expandedSubjects.includes(key) ? 
+                        <ChevronDown className="w-4 h-4" /> : 
+                        <ChevronRight className="w-4 h-4" />
+                      }
+                    </button>
                   </div>
-                  <div className="text-xs text-gray-600 ml-6">Tafels, Hoofdrekenen, Breuken, Meetkunde</div>
+                  
+                  {expandedSubjects.includes(key) && (
+                    <div className="p-3 bg-white border-t">
+                      <div className="text-xs text-gray-600 mb-2">Selecteer onderdelen:</div>
+                      <div className="grid grid-cols-2 gap-2">
+                        {allSubtopics[key as keyof typeof allSubtopics].map((subtopic) => (
+                          <label key={subtopic} className="flex items-center gap-2 text-sm">
+                            <Checkbox
+                              checked={subjects[key as keyof typeof subjects].subtopics.includes(subtopic)}
+                              onCheckedChange={(checked) => handleSubtopicChange(key as keyof typeof subjects, subtopic, !!checked)}
+                              disabled={!subjects[key as keyof typeof subjects].enabled}
+                            />
+                            <span className={!subjects[key as keyof typeof subjects].enabled ? 'text-gray-400' : ''}>{subtopic}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-
-              <div className="flex items-center gap-3 p-3 border rounded-lg">
-                <BookOpen className="w-5 h-5 text-green-500" />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <Checkbox 
-                      checked={subjects.taal.enabled}
-                      onCheckedChange={(checked) => handleSubjectChange('taal', !!checked)}
-                    />
-                    <span className="font-semibold">Taal</span>
-                  </div>
-                  <div className="text-xs text-gray-600 ml-6">Spelling, Begrijpend lezen, Woordenschat, Grammatica</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 p-3 border rounded-lg">
-                <Globe className="w-5 h-5 text-purple-500" />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <Checkbox 
-                      checked={subjects.engels.enabled}
-                      onCheckedChange={(checked) => handleSubjectChange('engels', !!checked)}
-                    />
-                    <span className="font-semibold">Engels</span>
-                  </div>
-                  <div className="text-xs text-gray-600 ml-6">Woorden, Zinnen, Uitspraak, Conversatie</div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
@@ -232,7 +267,7 @@ const ProgramGeneratorBox: React.FC<ProgramGeneratorBoxProps> = ({
       <div className="mt-6 pt-6 border-t">
         <Button
           onClick={handleGenerate}
-          disabled={isGenerating || !Object.values(subjects).some(s => s.enabled)}
+          disabled={isGenerating || !Object.values(subjects).some(s => s.enabled && s.subtopics.length > 0)}
           className="w-full h-12 text-lg font-semibold"
         >
           {isGenerating ? (
@@ -247,6 +282,11 @@ const ProgramGeneratorBox: React.FC<ProgramGeneratorBoxProps> = ({
             </>
           )}
         </Button>
+        {!Object.values(subjects).some(s => s.enabled && s.subtopics.length > 0) && (
+          <p className="text-xs text-red-600 mt-2 text-center">
+            Selecteer minstens één vakgebied met onderdelen
+          </p>
+        )}
       </div>
     </div>
   );

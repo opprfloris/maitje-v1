@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Shield, Eye, Database, Lock, UserCheck } from 'lucide-react';
@@ -11,15 +10,15 @@ interface PrivacyDialogProps {
 const PrivacyDialog = ({ isOpen, onClose }: PrivacyDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-white">
+        <DialogHeader className="bg-white">
           <DialogTitle className="flex items-center gap-2 text-2xl">
             <Shield className="w-6 h-6 text-green-600" />
             Privacy & Dataverzameling Beleid
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-6 text-gray-700">
+        <div className="space-y-6 text-gray-700 bg-white">
           <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-400">
             <p className="font-semibold text-green-800">
               🔒 mAItje respecteert de privacy van uw kind en uw gezin. Deze informatie legt uit hoe we data verzamelen en gebruiken.

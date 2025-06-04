@@ -20,6 +20,10 @@ serve(async (req) => {
   }
 
   try {
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key is niet geconfigureerd in Supabase secrets');
+    }
+
     const { 
       selectedWeek, 
       selectedYear, 
@@ -33,6 +37,7 @@ serve(async (req) => {
     } = await req.json();
 
     console.log('Generating week program with AI for week:', selectedWeek, 'year:', selectedYear);
+    console.log('Settings:', { moeilijkheidsgraad, timePerDay, subjects, theme, kindNiveau });
 
     // Get user's previous performance data if personalization is enabled
     let personalizationData = '';
@@ -59,13 +64,17 @@ Recente prestaties van het kind:
       }
     }
 
-    // Build enabled subjects list
+    // Build enabled subjects list with subtopics
     const enabledSubjects = Object.entries(subjects)
       .filter(([_, subject]) => subject.enabled)
       .map(([name, subject]) => ({
         name,
-        subtopics: subject.subtopics
+        subtopics: subject.subtopics.length > 0 ? subject.subtopics : getDefaultSubtopics(name)
       }));
+
+    if (enabledSubjects.length === 0) {
+      throw new Error('Geen vakgebieden geselecteerd');
+    }
 
     // Create AI prompt for week program generation
     const systemPrompt = `Je bent mAItje, een AI assistent die educatieve weekprogramma's maakt voor Nederlandse basisschoolkinderen.
@@ -73,9 +82,9 @@ Recente prestaties van het kind:
 BELANGRIJKE INSTRUCTIES:
 - Genereer een weekprogramma voor 5 dagen (maandag t/m vrijdag)
 - Elk dag moet EXACT ${timePerDay} minuten aan oefeningen bevatten
-- Niveau kind: ${kindNiveau}/10
+- Niveau kind: ${kindNiveau}/10 (1=beginner, 10=gevorderd)
 - Moeilijkheidsgraad: ${moeilijkheidsgraad}
-- Geselecteerde vakgebieden: ${enabledSubjects.map(s => s.name).join(', ')}
+- Geselecteerde vakgebieden: ${enabledSubjects.map(s => `${s.name} (${s.subtopics.join(', ')})`).join('; ')}
 ${theme ? `- Thema: "${theme}" - integreer dit thema in alle oefeningen waar mogelijk` : ''}
 
 ${personalizationData}
@@ -86,14 +95,14 @@ MOEILIJKHEIDSNIVEAUS:
 - "uitdagend": Maak oefeningen 1-2 niveaus boven het kind niveau
 
 VAKGEBIED RICHTLIJNEN:
-- Rekenen: Tafels, hoofdrekenen, breuken, meetkunde, woordsommen
-- Taal: Spelling, begrijpend lezen, woordenschat, grammatica
-- Engels: Vocabulaire, zinsbouw, uitspraak, conversatie
+- Rekenen: Gebruik geselecteerde subtopics, pas toe op Nederlandse basisschool curriculum
+- Taal: Nederlandse spelling, begrijpend lezen, woordenschat, grammatica
+- Engels: Basis Engels voor Nederlandse kinderen, woordenschat, zinsbouw
 
 Genereer voor elke oefening 3-5 specifieke vragen met:
-- Duidelijke vraagstelling
+- Duidelijke Nederlandse vraagstelling
 - Correct antwoord
-- 2-3 helpende hints
+- 2-3 helpende hints in het Nederlands
 
 Zorg dat de tijdsverdeling realistisch is en uitkomt op ${timePerDay} minuten per dag.`;
 
@@ -129,7 +138,10 @@ Zorg ervoor dat:
 - Vragen passen bij niveau ${kindNiveau} en moeilijkheidsgraad "${moeilijkheidsgraad}"
 - ${theme ? `Thema "${theme}" wordt geïntegreerd waar mogelijk` : 'Geen specifiek thema'}
 - Er variatie is in oefentypen per dag
-- Vragen realistisch en leerzaam zijn voor Nederlandse basisschoolleerlingen`;
+- Vragen realistisch en leerzaam zijn voor Nederlandse basisschoolleerlingen
+- Gebruik alleen geselecteerde subtopics: ${enabledSubjects.map(s => s.subtopics.join(', ')).join('; ')}`;
+
+    console.log('Sending request to OpenAI...');
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -141,7 +153,7 @@ Zorg ervoor dat:
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPromprompt }
+          { role: 'user', content: userPrompt }
         ],
         temperature: 0.7,
         max_tokens: 4000,
@@ -149,7 +161,9 @@ Zorg ervoor dat:
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+      const errorData = await response.text();
+      console.error('OpenAI API error:', response.status, errorData);
+      throw new Error(`OpenAI API fout (${response.status}): ${errorData}`);
     }
 
     const aiResponse = await response.json();
@@ -166,11 +180,14 @@ Zorg ervoor dat:
       programData = JSON.parse(jsonString);
     } catch (parseError) {
       console.error('Error parsing AI response:', parseError);
-      throw new Error('Failed to parse AI response as JSON');
+      console.error('Raw AI response:', generatedContent);
+      throw new Error('AI response kon niet worden geparseerd als JSON');
     }
 
     // Validate and ensure time constraints are met
     const validatedProgram = validateAndAdjustProgram(programData.dagen, timePerDay);
+
+    console.log('Program successfully generated and validated');
 
     return new Response(JSON.stringify({ 
       success: true, 
@@ -192,6 +209,19 @@ Zorg ervoor dat:
   }
 });
 
+function getDefaultSubtopics(subject: string): string[] {
+  switch (subject) {
+    case 'rekenen':
+      return ['Tafels', 'Hoofdrekenen', 'Breuken', 'Meetkunde'];
+    case 'taal':
+      return ['Spelling', 'Begrijpend lezen', 'Woordenschat', 'Grammatica'];
+    case 'engels':
+      return ['Woorden', 'Zinnen', 'Uitspraak', 'Conversatie'];
+    default:
+      return [];
+  }
+}
+
 function validateAndAdjustProgram(dagen: any[], targetTimePerDay: number) {
   return dagen.map(dag => {
     // Calculate total time for this day
@@ -202,7 +232,7 @@ function validateAndAdjustProgram(dagen: any[], targetTimePerDay: number) {
       const adjustmentFactor = targetTimePerDay / totalTime;
       
       dag.oefeningen = dag.oefeningen.map((oef: any) => {
-        const adjustedTime = Math.round((oef.tijdInMinuten || 0) * adjustmentFactor);
+        const adjustedTime = Math.max(1, Math.round((oef.tijdInMinuten || 0) * adjustmentFactor));
         return {
           ...oef,
           tijdInMinuten: adjustedTime,

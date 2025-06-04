@@ -4,9 +4,11 @@ import { Database, Search, Filter, Download, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
+type TableName = 'profiles' | 'children' | 'user_interests' | 'user_ai_config' | 'weekly_programs' | 'user_privacy_settings' | 'daily_plans' | 'plan_item_progress' | 'exercise_sessions' | 'helpers';
+
 const DatabaseInzichtTab = () => {
   const { user } = useAuth();
-  const [selectedTable, setSelectedTable] = useState('profiles');
+  const [selectedTable, setSelectedTable] = useState<TableName>('profiles');
   const [searchFilter, setSearchFilter] = useState('');
   const [tableData, setTableData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -14,16 +16,16 @@ const DatabaseInzichtTab = () => {
   console.log('Database inzicht tab loaded, user:', user?.id);
 
   const tables = [
-    { id: 'profiles', name: 'Ouder Accounts', description: 'Gebruikersprofielen en instellingen' },
-    { id: 'children', name: 'Kinderen', description: 'Kind profielen en niveaus' },
-    { id: 'user_interests', name: 'Interessegebieden', description: 'Thema\'s en interesses per gebruiker' },
-    { id: 'user_ai_config', name: 'AI Configuratie', description: 'AI model en API instellingen' },
-    { id: 'weekly_programs', name: 'Weekprogramma\'s', description: 'Gegenereerde lesprogramma\'s' },
-    { id: 'user_privacy_settings', name: 'Privacy Instellingen', description: 'Notificatie en privacy voorkeuren' },
-    { id: 'daily_plans', name: 'Dagplannen', description: 'Gegenereerde dagelijkse lesprogramma\'s' },
-    { id: 'plan_item_progress', name: 'Oefening Voortgang', description: 'Status van individuele oefeningen' },
-    { id: 'exercise_sessions', name: 'Oefensessies', description: 'Voltooide oefensessies en scores' },
-    { id: 'helpers', name: 'mAItje Hulpjes', description: 'Beschikbare AI assistenten' }
+    { id: 'profiles' as const, name: 'Ouder Accounts', description: 'Gebruikersprofielen en instellingen' },
+    { id: 'children' as const, name: 'Kinderen', description: 'Kind profielen en niveaus' },
+    { id: 'user_interests' as const, name: 'Interessegebieden', description: 'Thema\'s en interesses per gebruiker' },
+    { id: 'user_ai_config' as const, name: 'AI Configuratie', description: 'AI model en API instellingen' },
+    { id: 'weekly_programs' as const, name: 'Weekprogramma\'s', description: 'Gegenereerde lesprogramma\'s' },
+    { id: 'user_privacy_settings' as const, name: 'Privacy Instellingen', description: 'Notificatie en privacy voorkeuren' },
+    { id: 'daily_plans' as const, name: 'Dagplannen', description: 'Gegenereerde dagelijkse lesprogramma\'s' },
+    { id: 'plan_item_progress' as const, name: 'Oefening Voortgang', description: 'Status van individuele oefeningen' },
+    { id: 'exercise_sessions' as const, name: 'Oefensessies', description: 'Voltooide oefensessies en scores' },
+    { id: 'helpers' as const, name: 'mAItje Hulpjes', description: 'Beschikbare AI assistenten' }
   ];
 
   useEffect(() => {
@@ -38,7 +40,7 @@ const DatabaseInzichtTab = () => {
       let query = supabase.from(selectedTable).select('*');
       
       // Voor gebruiker-specifieke tabellen, filter op user_id
-      const userSpecificTables = ['profiles', 'user_interests', 'user_ai_config', 'weekly_programs', 'user_privacy_settings'];
+      const userSpecificTables: TableName[] = ['profiles', 'user_interests', 'user_ai_config', 'weekly_programs', 'user_privacy_settings'];
       if (userSpecificTables.includes(selectedTable)) {
         if (selectedTable === 'profiles') {
           query = query.eq('id', user.id);
@@ -103,6 +105,10 @@ const DatabaseInzichtTab = () => {
     });
   });
 
+  const handleTableChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedTable(e.target.value as TableName);
+  };
+
   return (
     <div className="space-y-6">
       {/* Warning */}
@@ -128,7 +134,7 @@ const DatabaseInzichtTab = () => {
             <label className="block text-sm font-semibold text-gray-700 mb-2">Selecteer Tabel</label>
             <select
               value={selectedTable}
-              onChange={(e) => setSelectedTable(e.target.value)}
+              onChange={handleTableChange}
               className="w-full p-3 border border-gray-300 rounded-lg focus:border-maitje-green focus:outline-none"
             >
               {tables.map((table) => (

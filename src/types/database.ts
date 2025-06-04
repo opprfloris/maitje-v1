@@ -1,4 +1,5 @@
 
+
 export type Profile = {
   id: string;
   email: string;
@@ -80,3 +81,4 @@ export type PlanItemProgress = {
   created_at: string;
   updated_at: string;
 };
+

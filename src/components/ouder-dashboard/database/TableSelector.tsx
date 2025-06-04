@@ -2,7 +2,7 @@
 import React from 'react';
 import { Database, Search } from 'lucide-react';
 
-type TableName = 'profiles' | 'children' | 'user_interests' | 'user_ai_config' | 'weekly_programs' | 'user_privacy_settings' | 'daily_plans' | 'plan_item_progress' | 'exercise_sessions' | 'helpers';
+type TableName = 'profiles' | 'children' | 'family_connections' | 'exercise_sessions' | 'exercise_results' | 'daily_progress' | 'daily_plans' | 'plan_item_progress' | 'weekly_programs' | 'user_ai_config' | 'user_interests' | 'user_privacy_settings' | 'helpers' | 'specific_tips' | 'generic_tips';
 
 interface TableSelectorProps {
   selectedTable: TableName;
@@ -14,14 +14,19 @@ interface TableSelectorProps {
 const tables = [
   { id: 'profiles' as const, name: 'Ouder Accounts', description: 'Gebruikersprofielen en instellingen' },
   { id: 'children' as const, name: 'Kinderen', description: 'Kind profielen en niveaus' },
-  { id: 'user_interests' as const, name: 'Interessegebieden', description: 'Thema\'s en interesses per gebruiker' },
-  { id: 'user_ai_config' as const, name: 'AI Configuratie', description: 'AI model en API instellingen' },
-  { id: 'weekly_programs' as const, name: 'Weekprogramma\'s', description: 'Gegenereerde lesprogramma\'s' },
-  { id: 'user_privacy_settings' as const, name: 'Privacy Instellingen', description: 'Notificatie en privacy voorkeuren' },
+  { id: 'family_connections' as const, name: 'Familie Connecties', description: 'Ouder-kind relaties' },
+  { id: 'exercise_sessions' as const, name: 'Oefensessies', description: 'Voltooide oefensessies en scores' },
+  { id: 'exercise_results' as const, name: 'Oefenresultaten', description: 'Individuele oefenresultaten' },
+  { id: 'daily_progress' as const, name: 'Dagelijkse Voortgang', description: 'Dagelijkse voortgangsstatistieken' },
   { id: 'daily_plans' as const, name: 'Dagplannen', description: 'Gegenereerde dagelijkse lesprogramma\'s' },
   { id: 'plan_item_progress' as const, name: 'Oefening Voortgang', description: 'Status van individuele oefeningen' },
-  { id: 'exercise_sessions' as const, name: 'Oefensessies', description: 'Voltooide oefensessies en scores' },
-  { id: 'helpers' as const, name: 'mAItje Hulpjes', description: 'Beschikbare AI assistenten' }
+  { id: 'weekly_programs' as const, name: 'Weekprogramma\'s', description: 'Gegenereerde lesprogramma\'s' },
+  { id: 'user_ai_config' as const, name: 'AI Configuratie', description: 'AI model en API instellingen' },
+  { id: 'user_interests' as const, name: 'Interessegebieden', description: 'Thema\'s en interesses per gebruiker' },
+  { id: 'user_privacy_settings' as const, name: 'Privacy Instellingen', description: 'Notificatie en privacy voorkeuren' },
+  { id: 'helpers' as const, name: 'mAItje Hulpjes', description: 'Beschikbare AI assistenten' },
+  { id: 'specific_tips' as const, name: 'Specifieke Tips', description: 'Helper-specifieke tips' },
+  { id: 'generic_tips' as const, name: 'Generieke Tips', description: 'Algemene tips en hints' }
 ];
 
 const TableSelector: React.FC<TableSelectorProps> = ({

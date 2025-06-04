@@ -7,8 +7,8 @@ import ProgramGeneratorBox from './lesson-program/ProgramGeneratorBox';
 import DayDetailPopup from './lesson-program/DayDetailPopup';
 import GenerationAnimation from './lesson-program/GenerationAnimation';
 import WeekProgramDisplay from './lesson-program/WeekProgramDisplay';
-import ProgramGenerator, { GenerationSettings } from './lesson-program/ProgramGenerator';
-import ProgramManager from './lesson-program/ProgramManager';
+import { useProgramGenerator, GenerationSettings } from '@/hooks/useProgramGenerator';
+import { useProgramManager } from '@/hooks/useProgramManager';
 
 const LesprogrammaTab = () => {
   const { user } = useAuth();
@@ -79,7 +79,7 @@ const LesprogrammaTab = () => {
     setIsDayPopupOpen(true);
   };
 
-  const programGenerator = ProgramGenerator({
+  const programGenerator = useProgramGenerator({
     selectedWeek,
     selectedYear,
     moeilijkheidsgraad,
@@ -89,7 +89,7 @@ const LesprogrammaTab = () => {
     onReloadPrograms: loadWeekProgrammas
   });
 
-  const programManager = ProgramManager({
+  const programManager = useProgramManager({
     weekProgrammas,
     selectedWeek,
     selectedYear,

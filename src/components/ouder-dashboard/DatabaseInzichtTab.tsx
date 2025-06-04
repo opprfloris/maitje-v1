@@ -15,6 +15,7 @@ const DatabaseInzichtTab = () => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [searchFilter, setSearchFilter] = useState('');
   const [aiQueries, setAiQueries] = useState<any[]>([]);
 
   useEffect(() => {
@@ -65,6 +66,35 @@ const DatabaseInzichtTab = () => {
     }
   };
 
+  // Filter data based on search
+  const filteredData = data.filter(row => {
+    if (!searchFilter) return true;
+    return Object.values(row).some(value => 
+      String(value).toLowerCase().includes(searchFilter.toLowerCase())
+    );
+  });
+
+  const handleExport = () => {
+    // Export filtered data to CSV
+    if (filteredData.length === 0) return;
+    
+    const headers = Object.keys(filteredData[0]);
+    const csvContent = [
+      headers.join(','),
+      ...filteredData.map(row => 
+        headers.map(header => String(row[header] || '')).join(',')
+      )
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${selectedTable}_export.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       <DatabaseWarning />
@@ -74,15 +104,20 @@ const DatabaseInzichtTab = () => {
           <TableSelector 
             selectedTable={selectedTable}
             onTableChange={setSelectedTable}
+            searchFilter={searchFilter}
+            onSearchChange={setSearchFilter}
           />
         </div>
         
         <div className="lg:col-span-2">
           <DataDisplay 
-            tableName={selectedTable}
-            data={data}
-            loading={loading}
-            error={error}
+            selectedTable={selectedTable}
+            tableData={data}
+            filteredData={filteredData}
+            isLoading={loading}
+            searchFilter={searchFilter}
+            onRefresh={fetchData}
+            onExport={handleExport}
           />
         </div>
       </div>

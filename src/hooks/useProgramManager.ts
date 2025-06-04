@@ -1,21 +1,20 @@
 
-import React from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
-interface ProgramManagerProps {
+interface UseProgramManagerProps {
   weekProgrammas: any[];
   selectedWeek: number;
   selectedYear: number;
   onReloadPrograms: () => void;
 }
 
-const ProgramManager: React.FC<ProgramManagerProps> = ({
+export const useProgramManager = ({
   weekProgrammas,
   selectedWeek,
   selectedYear,
   onReloadPrograms
-}) => {
+}: UseProgramManagerProps) => {
   const { user } = useAuth();
 
   const publishProgram = async () => {
@@ -40,5 +39,3 @@ const ProgramManager: React.FC<ProgramManagerProps> = ({
 
   return { publishProgram };
 };
-
-export default ProgramManager;

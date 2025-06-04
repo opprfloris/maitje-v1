@@ -1,7 +1,6 @@
 
-import React from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface GenerationSettings {
   timePerDay: number;
@@ -14,7 +13,7 @@ export interface GenerationSettings {
   theme: string;
 }
 
-interface ProgramGeneratorProps {
+interface UseProgramGeneratorProps {
   selectedWeek: number;
   selectedYear: number;
   moeilijkheidsgraad: 'makkelijker' | 'op_niveau' | 'uitdagend';
@@ -24,7 +23,7 @@ interface ProgramGeneratorProps {
   onReloadPrograms: () => void;
 }
 
-const ProgramGenerator: React.FC<ProgramGeneratorProps> = ({
+export const useProgramGenerator = ({
   selectedWeek,
   selectedYear,
   moeilijkheidsgraad,
@@ -32,7 +31,7 @@ const ProgramGenerator: React.FC<ProgramGeneratorProps> = ({
   onGenerationProgress,
   onGenerationComplete,
   onReloadPrograms
-}) => {
+}: UseProgramGeneratorProps) => {
   const { user } = useAuth();
   const dagen = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag'];
 
@@ -193,5 +192,3 @@ const ProgramGenerator: React.FC<ProgramGeneratorProps> = ({
 
   return { generateProgramWithAI };
 };
-
-export default ProgramGenerator;

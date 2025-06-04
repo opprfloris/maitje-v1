@@ -2,14 +2,17 @@
 import React from 'react';
 import { Filter } from 'lucide-react';
 
-const AIQueriesLog: React.FC = () => {
-  const queries = [
-    { time: '14:32', query: 'Genereer weekprogramma voor kind', model: 'GPT-4-Mini', status: 'Succesvol' },
-    { time: '14:15', query: 'Analyseer voortgang statistieken', model: 'GPT-4-Mini', status: 'Succesvol' },
-    { time: '13:45', query: 'Geef hint voor rekensom', model: 'GPT-4-Mini', status: 'Succesvol' },
-    { time: '13:20', query: 'Personaliseer oefening thema', model: 'GPT-4-Mini', status: 'Succesvol' }
-  ];
+interface AIQueriesLogProps {
+  queries: Array<{
+    id: number;
+    query: string;
+    timestamp: string;
+    executionTime: string;
+    rowsAffected: number;
+  }>;
+}
 
+const AIQueriesLog: React.FC<AIQueriesLogProps> = ({ queries }) => {
   return (
     <div className="maitje-card">
       <div className="flex items-center gap-3 mb-4">
@@ -22,12 +25,10 @@ const AIQueriesLog: React.FC = () => {
           <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
             <div>
               <p className="font-semibold text-gray-800">{log.query}</p>
-              <p className="text-sm text-gray-600">{log.time} • {log.model}</p>
+              <p className="text-sm text-gray-600">{new Date(log.timestamp).toLocaleTimeString()} • GPT-4-Mini</p>
             </div>
-            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-              log.status === 'Succesvol' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-            }`}>
-              {log.status}
+            <span className="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+              Succesvol
             </span>
           </div>
         ))}

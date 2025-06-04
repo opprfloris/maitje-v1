@@ -38,7 +38,20 @@ export const useWeekPrograms = () => {
         return;
       }
 
-      setPrograms(data || []);
+      // Transform the data to match our WeekProgram interface
+      const transformedPrograms: WeekProgram[] = (data || []).map(program => ({
+        id: program.id,
+        week_number: program.week_number,
+        year: program.year,
+        status: program.status || 'draft',
+        difficulty_level: program.difficulty_level || 'op_niveau',
+        theme: program.theme,
+        program_data: Array.isArray(program.program_data) ? program.program_data : [],
+        created_at: program.created_at,
+        updated_at: program.updated_at
+      }));
+
+      setPrograms(transformedPrograms);
     } catch (error) {
       console.error('Error loading week programs:', error);
     } finally {

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { User, Settings, Calendar, BarChart } from 'lucide-react';
+import { User, Settings, Calendar, BarChart, MessageSquare, TrendingUp, ArrowLeft } from 'lucide-react';
 
 interface Props {
   onBack: () => void;
@@ -11,6 +11,8 @@ const OuderProfiel = ({ onBack }: Props) => {
   const [pinCode, setPinCode] = useState('');
   const [pinError, setPinError] = useState(false);
   const [childLevel, setChildLevel] = useState('Groep 5');
+  const [focusArea, setFocusArea] = useState('balanced');
+  const [aiMessage, setAiMessage] = useState('');
 
   console.log('Ouder profiel loaded, authenticated:', isAuthenticated);
 
@@ -25,10 +27,10 @@ const OuderProfiel = ({ onBack }: Props) => {
   };
 
   const weekProgram = [
-    { day: 'Maandag', exercises: ['Tafel van 5 (door elkaar)', 'Leestekst: De Hond'] },
+    { day: 'Maandag', exercises: ['Tafel van 5 (door elkaar)', 'Leestekst: De Hond', 'Engels: Kleuren'] },
     { day: 'Dinsdag', exercises: ['Tafel van 7 (op volgorde)', 'Leestekst: Het Verloren Katje'] },
-    { day: 'Woensdag', exercises: ['Tafel van 3 (door elkaar)'] },
-    { day: 'Donderdag', exercises: ['Tafel van 8 (op volgorde)', 'Leestekst: De Ruimtereis'] },
+    { day: 'Woensdag', exercises: ['Tafel van 3 (door elkaar)', 'Engels: Dieren'] },
+    { day: 'Donderdag', exercises: ['Tafel van 8 (op volgorde)', 'Leestekst: De Ruimtereis', 'Engels: Schoolspullen'] },
     { day: 'Vrijdag', exercises: ['Herhaling alle tafels', 'Leestekst: Het Geheime Bos'] }
   ];
 
@@ -108,16 +110,21 @@ const OuderProfiel = ({ onBack }: Props) => {
 
   // Ouder dashboard
   return (
-    <div className="min-h-screen p-6 max-w-6xl mx-auto">
+    <div className="min-h-screen p-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-nunito font-bold text-gray-800">Ouder Dashboard</h1>
+        <div className="flex items-center gap-4">
+          <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+            <ArrowLeft className="w-6 h-6 text-gray-600" />
+          </button>
+          <h1 className="text-3xl font-nunito font-bold text-gray-800">Ouder Dashboard</h1>
+        </div>
         <button onClick={onBack} className="maitje-button-secondary px-4 py-2">
-          Uitloggen
+          Terug naar Kind App
         </button>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Weekprogramma */}
+      <div className="grid lg:grid-cols-4 gap-8">
+        {/* Weekprogramma - 2 kolommen breed */}
         <div className="lg:col-span-2">
           <div className="maitje-card">
             <div className="flex items-center gap-3 mb-6">
@@ -145,15 +152,15 @@ const OuderProfiel = ({ onBack }: Props) => {
 
             <div className="mt-6 p-4 bg-blue-50 rounded-xl border-l-4 border-maitje-blue">
               <p className="text-sm text-gray-700">
-                💡 <strong>AI Tip:</strong> Dit weekprogramma is automatisch gegenereerd op basis van het niveau van uw kind en eerdere prestaties.
+                💡 <strong>mAItje Tip:</strong> Dit weekprogramma is automatisch gegenereerd op basis van het niveau van uw kind en eerdere prestaties.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Instellingen en statistieken */}
-        <div className="space-y-6">
-          {/* Kind niveau instelling */}
+        {/* Rechterkant - 2 kolommen */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Kind instellingen */}
           <div className="maitje-card">
             <div className="flex items-center gap-3 mb-4">
               <Settings className="w-5 h-5 text-maitje-green" />
@@ -162,7 +169,7 @@ const OuderProfiel = ({ onBack }: Props) => {
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Groepsniveau</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Basisniveau Kind</label>
                 <select
                   value={childLevel}
                   onChange={(e) => setChildLevel(e.target.value)}
@@ -175,6 +182,11 @@ const OuderProfiel = ({ onBack }: Props) => {
                   <option>Groep 7</option>
                   <option>Groep 8</option>
                 </select>
+              </div>
+              
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <span className="text-sm text-gray-600">Huidig Leerlevel (abstract):</span>
+                <span className="font-bold text-maitje-green ml-2">5</span>
               </div>
               
               <button className="w-full maitje-button text-sm">
@@ -200,10 +212,81 @@ const OuderProfiel = ({ onBack }: Props) => {
                 <span className="font-bold text-maitje-blue">8/10</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-700">Gemiddelde score</span>
+                <span className="text-gray-700">Engels oefeningen</span>
+                <span className="font-bold text-purple-500">6/8</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-700">Correcte antwoorden</span>
                 <span className="font-bold text-gray-800">87%</span>
               </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-700">Actieve dagen deze week</span>
+                <span className="font-bold text-orange-500">5</span>
+              </div>
             </div>
+          </div>
+
+          {/* Focus instellen */}
+          <div className="maitje-card">
+            <div className="flex items-center gap-3 mb-4">
+              <TrendingUp className="w-5 h-5 text-orange-500" />
+              <h3 className="text-xl font-nunito font-bold text-gray-800">Focus instellen voor mAItje</h3>
+            </div>
+            
+            <div className="space-y-3">
+              {[
+                { id: 'balanced', label: 'Gebalanceerd', color: 'gray' },
+                { id: 'rekenen', label: 'Meer focus op Rekenen', color: 'green' },
+                { id: 'lezen', label: 'Meer focus op Lezen', color: 'blue' },
+                { id: 'engels', label: 'Meer focus op Engels', color: 'purple' }
+              ].map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => setFocusArea(option.id)}
+                  className={`w-full p-3 rounded-lg border-2 transition-all text-left ${
+                    focusArea === option.id
+                      ? `border-${option.color}-500 bg-${option.color}-50`
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Communicatie met mAItje */}
+          <div className="maitje-card">
+            <div className="flex items-center gap-3 mb-4">
+              <MessageSquare className="w-5 h-5 text-maitje-green" />
+              <h3 className="text-xl font-nunito font-bold text-gray-800">Communicatie met mAItje</h3>
+            </div>
+            
+            <div className="space-y-3">
+              <textarea
+                value={aiMessage}
+                onChange={(e) => setAiMessage(e.target.value)}
+                placeholder="Deel informatie met mAItje (bijv. 'Morgen toets van tafels', 'Engels is nog lastig')..."
+                className="w-full p-3 border border-gray-300 rounded-lg focus:border-maitje-green focus:outline-none resize-none"
+                rows={3}
+              />
+              <button className="w-full maitje-button text-sm">
+                Bericht Versturen
+              </button>
+            </div>
+          </div>
+
+          {/* Voortgangsdetails knop */}
+          <div className="maitje-card">
+            <button className="w-full p-4 text-left hover:bg-gray-50 rounded-lg transition-colors">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-nunito font-bold text-gray-800">Voortgangsdetails</h3>
+                  <p className="text-sm text-gray-600">Bekijk gedetailleerde scores en prestaties</p>
+                </div>
+                <span className="text-maitje-blue">→</span>
+              </div>
+            </button>
           </div>
         </div>
       </div>

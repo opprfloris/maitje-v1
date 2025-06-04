@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 import KindDashboard from './KindDashboard';
 import RekenenModule from './RekenenModule';
 import LezenModule from './LezenModule';
+import EngelsModule from './EngelsModule';
 import OuderProfiel from './OuderProfiel';
 
-export type AppView = 'dashboard' | 'rekenen' | 'lezen' | 'ouder';
+export type AppView = 'dashboard' | 'rekenen' | 'lezen' | 'engels' | 'ouder';
 
 const MaitjeApp = () => {
   const [currentView, setCurrentView] = useState<AppView>('dashboard');
@@ -21,6 +22,8 @@ const MaitjeApp = () => {
         return <RekenenModule onBack={() => setCurrentView('dashboard')} />;
       case 'lezen':
         return <LezenModule onBack={() => setCurrentView('dashboard')} />;
+      case 'engels':
+        return <EngelsModule onBack={() => setCurrentView('dashboard')} />;
       case 'ouder':
         return <OuderProfiel onBack={() => setCurrentView('dashboard')} />;
       default:

@@ -84,7 +84,14 @@ export const useDailyPlan = (childId?: string) => {
         .order('item_order');
 
       if (itemsError) throw itemsError;
-      setItems(planItems || []);
+      
+      // Cast the data to proper types
+      const typedItems: PlanItemProgress[] = (planItems || []).map(item => ({
+        ...item,
+        status: item.status as PlanItemProgress['status']
+      }));
+      
+      setItems(typedItems);
     } catch (err) {
       console.error('Error fetching daily plan:', err);
       setError(err instanceof Error ? err.message : 'Failed to load plan');

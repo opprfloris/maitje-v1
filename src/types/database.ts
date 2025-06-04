@@ -1,3 +1,4 @@
+
 export type Profile = {
   id: string;
   email: string;
@@ -52,6 +53,30 @@ export type DailyProgress = {
   total_correct: number;
   subjects_practiced: string[];
   streak_days: number;
-  achievements: any; // Changed from any[] to any to match Json type from database
+  achievements: any;
   created_at: string;
+};
+
+export type DailyPlan = {
+  id: string;
+  child_id: string;
+  date: string;
+  plan_items: any;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PlanItemProgress = {
+  id: string;
+  plan_id: string;
+  item_order: number;
+  module_type: string;
+  exercise_id: string;
+  title: string;
+  description?: string;
+  status: 'todo' | 'in_progress' | 'completed' | 'skipped';
+  started_at?: string;
+  completed_at?: string;
+  created_at: string;
+  updated_at: string;
 };

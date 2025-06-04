@@ -42,6 +42,33 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_plans: {
+        Row: {
+          child_id: string
+          created_at: string
+          date: string
+          id: string
+          plan_items: Json
+          updated_at: string
+        }
+        Insert: {
+          child_id: string
+          created_at?: string
+          date?: string
+          id?: string
+          plan_items?: Json
+          updated_at?: string
+        }
+        Update: {
+          child_id?: string
+          created_at?: string
+          date?: string
+          id?: string
+          plan_items?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       daily_progress: {
         Row: {
           achievements: Json | null
@@ -266,6 +293,59 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      plan_item_progress: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          exercise_id: string
+          id: string
+          item_order: number
+          module_type: string
+          plan_id: string
+          started_at: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          exercise_id: string
+          id?: string
+          item_order: number
+          module_type: string
+          plan_id: string
+          started_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          exercise_id?: string
+          id?: string
+          item_order?: number
+          module_type?: string
+          plan_id?: string
+          started_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_item_progress_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "daily_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

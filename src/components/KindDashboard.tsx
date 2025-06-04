@@ -6,6 +6,8 @@ import { Helper } from '@/types/helpers';
 import { useAuth } from '@/contexts/AuthContext';
 import HelperSelector from './HelperSelector';
 import { useHelperTips } from '@/hooks/useHelperTips';
+import { useDailyPlan } from '@/hooks/useDailyPlan';
+import ProgrammaMode from './ProgrammaMode';
 
 interface Props {
   onNavigate: (view: AppView) => void;
@@ -15,13 +17,22 @@ interface Props {
 const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
   const { profile } = useAuth();
   const [selectedHelper, setSelectedHelper] = useState<Helper | null>(null);
+  const [showProgramma, setShowProgramma] = useState(false);
   
   const { currentTip, loading: tipLoading } = useHelperTips(selectedHelper);
+  const { items, loading: planLoading } = useDailyPlan('dummy-child-id'); // We'll use a dummy ID for now
 
   const handleHelperSelect = (helper: Helper) => {
     setSelectedHelper(helper);
-    // Store in localStorage for persistence
     localStorage.setItem('selectedHelper', JSON.stringify(helper));
+  };
+
+  const startProgramma = () => {
+    setShowProgramma(true);
+  };
+
+  const exitProgramma = () => {
+    setShowProgramma(false);
   };
 
   // Load helper from localStorage on mount
@@ -37,6 +48,17 @@ const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
   }, []);
 
   const childName = profile?.child_name || 'daar';
+
+  if (showProgramma) {
+    return (
+      <ProgrammaMode
+        childId="dummy-child-id"
+        childName={childName}
+        selectedHelper={selectedHelper}
+        onExit={exitProgramma}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen p-6 max-w-4xl mx-auto">
@@ -94,39 +116,63 @@ const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
         <h2 className="text-2xl font-nunito font-bold text-gray-800 mb-4 flex items-center gap-3">
           📅 Jouw mAItje Plan voor Vandaag
         </h2>
-        <div className="grid gap-4 mb-6">
-          <div className="flex items-center gap-4 p-4 bg-maitje-cream rounded-xl border-l-4 border-maitje-green">
-            <div className="w-8 h-8 bg-maitje-green rounded-full flex items-center justify-center text-white font-bold">
-              1
-            </div>
-            <div>
-              <p className="font-semibold text-gray-800">Tafel van 7 oefenen</p>
-              <p className="text-sm text-gray-600">Door elkaar • 10 minuten</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 p-4 bg-maitje-cream rounded-xl border-l-4 border-maitje-blue">
-            <div className="w-8 h-8 bg-maitje-blue rounded-full flex items-center justify-center text-white font-bold">
-              2
-            </div>
-            <div>
-              <p className="font-semibold text-gray-800">Lezen: "De Ruimtereis"</p>
-              <p className="text-sm text-gray-600">Met vragen • 15 minuten</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 p-4 bg-maitje-cream rounded-xl border-l-4 border-purple-500">
-            <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold">
-              3
-            </div>
-            <div>
-              <p className="font-semibold text-gray-800">Engels: Dieren woordjes</p>
-              <p className="text-sm text-gray-600">10 nieuwe woorden • 8 minuten</p>
-            </div>
-          </div>
-        </div>
         
-        <button className="w-full maitje-button text-xl py-6">
-          Start Programma →
-        </button>
+        {planLoading ? (
+          <div className="text-center py-8">
+            <div className="w-8 h-8 bg-maitje-blue rounded-full flex items-center justify-center text-xl mx-auto mb-4 animate-bounce">
+              🦉
+            </div>
+            <p className="text-gray-600 font-nunito">Plan laden...</p>
+          </div>
+        ) : (
+          <>
+            <div className="grid gap-4 mb-6">
+              {items.map((item, index) => (
+                <div 
+                  key={item.id}
+                  className={`flex items-center gap-4 p-4 bg-maitje-cream rounded-xl border-l-4 ${
+                    item.status === 'completed' 
+                      ? 'border-maitje-green bg-green-50' 
+                      : item.status === 'skipped'
+                      ? 'border-gray-400 bg-gray-50'
+                      : index === 0 ? 'border-maitje-green' 
+                      : index === 1 ? 'border-maitje-blue'
+                      : 'border-purple-500'
+                  }`}
+                >
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
+                    item.status === 'completed' 
+                      ? 'bg-maitje-green' 
+                      : item.status === 'skipped'
+                      ? 'bg-gray-400'
+                      : index === 0 ? 'bg-maitje-green' 
+                      : index === 1 ? 'bg-maitje-blue'
+                      : 'bg-purple-500'
+                  }`}>
+                    {item.status === 'completed' ? '✓' : item.status === 'skipped' ? '⏭' : index + 1}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-800">{item.title}</p>
+                    <p className="text-sm text-gray-600">{item.description}</p>
+                  </div>
+                  {item.status === 'completed' && (
+                    <div className="ml-auto text-maitje-green font-bold">Voltooid! ⭐</div>
+                  )}
+                  {item.status === 'skipped' && (
+                    <div className="ml-auto text-gray-500 font-bold">Overgeslagen</div>
+                  )}
+                </div>
+              ))}
+            </div>
+            
+            <button 
+              onClick={startProgramma}
+              className="w-full maitje-button text-xl py-6"
+            >
+              Start Programma →
+            </button>
+          </>
+        )}
       </div>
 
       {/* Hoofdmenu knoppen */}

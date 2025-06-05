@@ -3,13 +3,12 @@ import React, { useEffect, useState } from 'react';
 import { AppView } from './MaitjeApp';
 import { Helper } from '@/types/helpers';
 import { useAuth } from '@/contexts/AuthContext';
-import ProgrammaMode from './ProgrammaMode';
 import WeekProgramSelector from './weekprogram/WeekProgramSelector';
 import WeekProgramMode from './weekprogram/WeekProgramMode';
+import DailyExerciseMode from './exercises/DailyExerciseMode';
 import DashboardHeader from './dashboard/DashboardHeader';
 import WelcomeSection from './dashboard/WelcomeSection';
 import ProgramChoiceSection from './dashboard/ProgramChoiceSection';
-import DailyPlanSection from './dashboard/DailyPlanSection';
 import SubjectButtons from './dashboard/SubjectButtons';
 import AccessButtons from './dashboard/AccessButtons';
 import PincodeModal from './dashboard/PincodeModal';
@@ -22,7 +21,7 @@ interface Props {
 const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
   const { profile } = useAuth();
   const [selectedHelper, setSelectedHelper] = useState<Helper | null>(null);
-  const [showProgramma, setShowProgramma] = useState(false);
+  const [showDailyExercises, setShowDailyExercises] = useState(false);
   const [showWeekProgramSelector, setShowWeekProgramSelector] = useState(false);
   const [selectedWeekProgram, setSelectedWeekProgram] = useState<string | null>(null);
   const [showAIPincode, setShowAIPincode] = useState(false);
@@ -35,12 +34,12 @@ const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
     localStorage.setItem('selectedHelper', JSON.stringify(helper));
   };
 
-  const startProgramma = () => {
-    setShowProgramma(true);
+  const startDailyExercises = () => {
+    setShowDailyExercises(true);
   };
 
-  const exitProgramma = () => {
-    setShowProgramma(false);
+  const exitDailyExercises = () => {
+    setShowDailyExercises(false);
   };
 
   const startWeekProgram = () => {
@@ -127,13 +126,13 @@ const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
     );
   }
 
-  if (showProgramma) {
+  if (showDailyExercises) {
     return (
-      <ProgrammaMode
+      <DailyExerciseMode
         childId="dummy-child-id"
         childName={childName}
         selectedHelper={selectedHelper}
-        onExit={exitProgramma}
+        onExit={exitDailyExercises}
       />
     );
   }
@@ -150,10 +149,8 @@ const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
 
       <ProgramChoiceSection
         onStartWeekProgram={startWeekProgram}
-        onStartDailyExercises={startProgramma}
+        onStartDailyExercises={startDailyExercises}
       />
-
-      <DailyPlanSection childId="dummy-child-id" />
 
       <SubjectButtons onNavigate={onNavigate} />
 

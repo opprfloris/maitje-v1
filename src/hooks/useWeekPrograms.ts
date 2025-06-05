@@ -1,81 +1,86 @@
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useFamilyConnections } from './useFamilyConnections';
 
 export interface WeekProgram {
   id: string;
+  user_id: string;
   week_number: number;
   year: number;
-  status: string;
-  difficulty_level: string;
-  theme: string | null;
-  program_data: any[];
+  theme?: string;
+  difficulty_level?: string;
+  status?: string;
+  program_data?: any;
   created_at: string;
   updated_at: string;
 }
 
-export const useWeekPrograms = () => {
+export const useWeekPrograms = (childId?: string) => {
   const { user } = useAuth();
+  const { getParentIdForChild } = useFamilyConnections();
   const [programs, setPrograms] = useState<WeekProgram[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const loadPrograms = async () => {
-    if (!user) return;
-
+  const fetchPrograms = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('weekly_programs')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('status', 'published')
-        .order('year', { ascending: false })
-        .order('week_number', { ascending: false });
+      let userId = user?.id;
+      
+      // Als we een childId hebben, probeer de parent te vinden
+      if (childId && childId !== 'dummy-child-id') {
+        const parentId = getParentIdForChild(childId);
+        if (parentId) {
+          userId = parentId;
+        }
+      }
 
-      if (error) {
-        console.error('Error loading week programs:', error);
+      if (!userId) {
+        setPrograms([]);
         return;
       }
 
-      // Transform the data to match our WeekProgram interface
-      const transformedPrograms: WeekProgram[] = (data || []).map(program => ({
-        id: program.id,
-        week_number: program.week_number,
-        year: program.year,
-        status: program.status || 'draft',
-        difficulty_level: program.difficulty_level || 'op_niveau',
-        theme: program.theme,
-        program_data: Array.isArray(program.program_data) ? program.program_data : [],
-        created_at: program.created_at,
-        updated_at: program.updated_at
-      }));
+      const { data, error } = await supabase
+        .from('weekly_programs')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('status', 'published') // Alleen gepubliceerde programma's tonen voor kinderen
+        .order('created_at', { ascending: false });
 
-      setPrograms(transformedPrograms);
+      if (error) throw error;
+      setPrograms(data || []);
     } catch (error) {
-      console.error('Error loading week programs:', error);
+      console.error('Error fetching week programs:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const getProgramByWeek = (year: number, weekNumber: number) => {
-    return programs.find(p => p.year === year && p.week_number === weekNumber);
-  };
+  const getProgramById = async (id: string): Promise<WeekProgram | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('weekly_programs')
+        .select('*')
+        .eq('id', id)
+        .single();
 
-  const getAvailablePrograms = () => {
-    return programs.filter(p => p.program_data && p.program_data.length > 0);
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error fetching program by id:', error);
+      return null;
+    }
   };
 
   useEffect(() => {
-    loadPrograms();
-  }, [user]);
+    fetchPrograms();
+  }, [user, childId]);
 
   return {
     programs,
     loading,
-    loadPrograms,
-    getProgramByWeek,
-    getAvailablePrograms
+    refetch: fetchPrograms,
+    getProgramById,
   };
 };

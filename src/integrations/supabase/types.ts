@@ -81,6 +81,57 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_exercise_sessions: {
+        Row: {
+          child_id: string
+          completed_at: string | null
+          created_at: string
+          difficulty_level: string
+          duration_minutes: number
+          exercises: Json
+          id: string
+          progress: Json
+          session_type: string
+          settings: Json
+          started_at: string | null
+          subject: string
+          theme: string | null
+          updated_at: string
+        }
+        Insert: {
+          child_id: string
+          completed_at?: string | null
+          created_at?: string
+          difficulty_level?: string
+          duration_minutes?: number
+          exercises?: Json
+          id?: string
+          progress?: Json
+          session_type: string
+          settings?: Json
+          started_at?: string | null
+          subject: string
+          theme?: string | null
+          updated_at?: string
+        }
+        Update: {
+          child_id?: string
+          completed_at?: string | null
+          created_at?: string
+          difficulty_level?: string
+          duration_minutes?: number
+          exercises?: Json
+          id?: string
+          progress?: Json
+          session_type?: string
+          settings?: Json
+          started_at?: string | null
+          subject?: string
+          theme?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       daily_plans: {
         Row: {
           child_id: string
@@ -383,6 +434,45 @@ export type Database = {
           created_at?: string
           id?: number
           name?: string
+        }
+        Relationships: []
+      }
+      lesson_method_content: {
+        Row: {
+          content_data: Json
+          created_at: string
+          description: string | null
+          file_path: string | null
+          id: string
+          is_active: boolean
+          method_name: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content_data?: Json
+          created_at?: string
+          description?: string | null
+          file_path?: string | null
+          id?: string
+          is_active?: boolean
+          method_name: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content_data?: Json
+          created_at?: string
+          description?: string | null
+          file_path?: string | null
+          id?: string
+          is_active?: boolean
+          method_name?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

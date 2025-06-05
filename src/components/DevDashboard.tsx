@@ -1,20 +1,20 @@
 
 import React, { useState } from 'react';
-import { ArrowLeft, Brain, FileText, Settings, Database, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Bot, Settings, FileText, Database, MessageSquare, Upload } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import AIPromptInstellingenTab from './ai-dashboard/AIPromptInstellingenTab';
 import AIModelConfigTab from './ai-dashboard/AIModelConfigTab';
+import AIPromptInstellingenTab from './ai-dashboard/AIPromptInstellingenTab';
 import DocumentLibraryTab from './ai-dashboard/DocumentLibraryTab';
 import AIAnalyticsTab from './ai-dashboard/AIAnalyticsTab';
-import DatabaseInzichtTab from './ouder-dashboard/DatabaseInzichtTab';
+import ContentManagementTab from './dev-dashboard/ContentManagementTab';
 
 interface DevDashboardProps {
   onBack: () => void;
 }
 
 const DevDashboard = ({ onBack }: DevDashboardProps) => {
-  const [activeTab, setActiveTab] = useState('prompt-settings');
+  const [activeTab, setActiveTab] = useState('ai-config');
 
   return (
     <div className="min-h-screen bg-maitje-cream">
@@ -32,11 +32,8 @@ const DevDashboard = ({ onBack }: DevDashboardProps) => {
                 Terug naar Dashboard
               </Button>
               <div>
-                <h1 className="text-2xl font-nunito font-bold text-gray-800 flex items-center gap-2">
-                  <Brain className="w-6 h-6 text-maitje-blue" />
-                  Dev Instellingen
-                </h1>
-                <p className="text-gray-600">Ontwikkelaar tools voor AI optimalisatie en database management</p>
+                <h1 className="text-2xl font-nunito font-bold text-gray-800">Dev Dashboard</h1>
+                <p className="text-gray-600">AI & Content Management</p>
               </div>
             </div>
           </div>
@@ -45,43 +42,43 @@ const DevDashboard = ({ onBack }: DevDashboardProps) => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8 bg-white shadow-sm">
-            <TabsTrigger value="prompt-settings" className="flex items-center gap-2 text-sm">
+          <TabsList className="grid w-full grid-cols-5 mb-8">
+            <TabsTrigger value="ai-config" className="flex items-center gap-2">
+              <Bot className="w-4 h-4" />
+              AI Config
+            </TabsTrigger>
+            <TabsTrigger value="prompts" className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4" />
+              Prompts
+            </TabsTrigger>
+            <TabsTrigger value="documents" className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
-              Prompt Instellingen
+              Documents
             </TabsTrigger>
-            <TabsTrigger value="model-config" className="flex items-center gap-2 text-sm">
-              <Settings className="w-4 h-4" />
-              AI Model Config
+            <TabsTrigger value="content-management" className="flex items-center gap-2">
+              <Upload className="w-4 h-4" />
+              Content Management
             </TabsTrigger>
-            <TabsTrigger value="document-library" className="flex items-center gap-2 text-sm">
+            <TabsTrigger value="analytics" className="flex items-center gap-2">
               <Database className="w-4 h-4" />
-              Document Library
-            </TabsTrigger>
-            <TabsTrigger value="database-inzicht" className="flex items-center gap-2 text-sm">
-              <Database className="w-4 h-4" />
-              Database Inzicht
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2 text-sm">
-              <TrendingUp className="w-4 h-4" />
-              AI Analytics
+              Analytics
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="prompt-settings">
-            <AIPromptInstellingenTab />
-          </TabsContent>
-
-          <TabsContent value="model-config">
+          <TabsContent value="ai-config">
             <AIModelConfigTab />
           </TabsContent>
 
-          <TabsContent value="document-library">
+          <TabsContent value="prompts">
+            <AIPromptInstellingenTab />
+          </TabsContent>
+
+          <TabsContent value="documents">
             <DocumentLibraryTab />
           </TabsContent>
 
-          <TabsContent value="database-inzicht">
-            <DatabaseInzichtTab />
+          <TabsContent value="content-management">
+            <ContentManagementTab />
           </TabsContent>
 
           <TabsContent value="analytics">

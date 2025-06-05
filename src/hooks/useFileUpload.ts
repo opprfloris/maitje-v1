@@ -54,7 +54,19 @@ export const useFileUpload = () => {
       if (dbError) throw dbError;
 
       toast.success('Bestand succesvol geüpload!');
-      return data;
+      
+      // Convert the database response to our interface
+      const uploadedExample: UploadedExample = {
+        id: data.id,
+        file_name: data.file_name,
+        file_path: data.file_path,
+        file_type: data.file_type,
+        subject: data.subject,
+        ai_analysis: data.ai_analysis,
+        generated_exercises: Array.isArray(data.generated_exercises) ? data.generated_exercises : []
+      };
+
+      return uploadedExample;
     } catch (error) {
       console.error('Upload error:', error);
       toast.error('Fout bij uploaden van bestand');

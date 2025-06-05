@@ -14,12 +14,14 @@ interface WeekProgramSelectorProps {
   onBack: () => void;
 }
 
+type ViewMode = 'total' | 'week';
+
 const WeekProgramSelector: React.FC<WeekProgramSelectorProps> = ({
   childId,
   onSelectProgram,
   onBack
 }) => {
-  const [viewMode, setViewMode] = useState<'total' | 'week'>('total');
+  const [viewMode, setViewMode] = useState<ViewMode>('total');
   const { programs, loading: programsLoading } = useWeekPrograms();
   const { 
     getCurrentProgress, 

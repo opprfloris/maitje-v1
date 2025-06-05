@@ -34,7 +34,22 @@ export const useRecentActivity = (childId: string) => {
         .limit(5);
 
       if (error) throw error;
-      setRecentActivity(data || []);
+      
+      // Convert the database response to our interface with proper typing
+      const typedData: RecentActivity[] = (data || []).map(item => ({
+        id: item.id,
+        child_id: item.child_id,
+        activity_type: item.activity_type as 'week_program' | 'daily_exercise',
+        program_id: item.program_id,
+        session_id: item.session_id,
+        last_day: item.last_day,
+        completed_exercises: item.completed_exercises || 0,
+        total_exercises: item.total_exercises || 0,
+        created_at: item.created_at,
+        updated_at: item.updated_at
+      }));
+
+      setRecentActivity(typedData);
     } catch (error) {
       console.error('Error fetching recent activity:', error);
     } finally {

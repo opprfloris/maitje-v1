@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ArrowLeft, Bot, Settings, FileText, Database, MessageSquare, Upload } from 'lucide-react';
+import { ArrowLeft, Bot, Settings, FileText, Database, MessageSquare, Upload, BookOpen } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import AIModelConfigTab from './ai-dashboard/AIModelConfigTab';
@@ -8,6 +8,7 @@ import AIPromptInstellingenTab from './ai-dashboard/AIPromptInstellingenTab';
 import DocumentLibraryTab from './ai-dashboard/DocumentLibraryTab';
 import AIAnalyticsTab from './ai-dashboard/AIAnalyticsTab';
 import ContentManagementTab from './dev-dashboard/ContentManagementTab';
+import DevDashboardDocumentation from './DevDashboardDocumentation';
 
 interface DevDashboardProps {
   onBack: () => void;
@@ -15,6 +16,15 @@ interface DevDashboardProps {
 
 const DevDashboard = ({ onBack }: DevDashboardProps) => {
   const [activeTab, setActiveTab] = useState('ai-config');
+  const [showDocumentation, setShowDocumentation] = useState(false);
+
+  if (showDocumentation) {
+    return (
+      <DevDashboardDocumentation 
+        onBack={() => setShowDocumentation(false)} 
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-maitje-cream">
@@ -36,6 +46,15 @@ const DevDashboard = ({ onBack }: DevDashboardProps) => {
                 <p className="text-gray-600">AI & Content Management</p>
               </div>
             </div>
+            
+            <Button
+              onClick={() => setShowDocumentation(true)}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <BookOpen className="w-4 h-4" />
+              Systeemanalyse
+            </Button>
           </div>
         </div>
       </div>

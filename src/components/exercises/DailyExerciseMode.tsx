@@ -82,7 +82,7 @@ const DailyExerciseMode: React.FC<DailyExerciseModeProps> = ({
             }`}
           >
             <Play className="w-5 h-5" />
-            <span className="hidden sm:inline">Snelkoppelingen</span>
+            <span className="hidden sm:inline">Start Snel</span>
           </button>
           
           <button

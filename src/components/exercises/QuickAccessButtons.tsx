@@ -1,8 +1,12 @@
 
-import React from 'react';
-import { Calculator, BookOpen, Globe, Target } from 'lucide-react';
+import React, { useState } from 'react';
+import { Calculator, BookOpen, Globe, Target, Upload } from 'lucide-react';
+import FileUploader from './FileUploader';
 
 const QuickAccessButtons: React.FC = () => {
+  const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
+  const [showUploader, setShowUploader] = useState(false);
+
   const quickAccess = [
     {
       subject: 'rekenen',
@@ -11,7 +15,7 @@ const QuickAccessButtons: React.FC = () => {
       icon: Calculator,
       color: 'bg-blue-500',
       emoji: '🧮',
-      exercises: ['Optellen en Aftrekken', 'Tafels', 'Breuken', 'Meetkunde']
+      exercises: ['Optellen en Aftrekken', 'Vermenigvuldigen en Delen', 'Tafels Oefenen', 'Breuken', 'Hoofdrekenen', 'Verhalen Sommen']
     },
     {
       subject: 'begrijpend_lezen',
@@ -20,7 +24,7 @@ const QuickAccessButtons: React.FC = () => {
       icon: BookOpen,
       color: 'bg-green-500',
       emoji: '📖',
-      exercises: ['Korte Verhalen', 'Informatieve Teksten', 'Gedichten', 'Stripverhalen']
+      exercises: ['Korte Verhalen', 'Informatieve Teksten', 'Vraag en Antwoord', 'Samenvatten', 'Hoofdidee Vinden', 'Detail Vragen']
     },
     {
       subject: 'engels',
@@ -29,14 +33,44 @@ const QuickAccessButtons: React.FC = () => {
       icon: Globe,
       color: 'bg-purple-500',
       emoji: '🇬🇧',
-      exercises: ['Woordenschat', 'Luisteroefeningen', 'Gesprekjes', 'Schrijfoefeningen']
+      exercises: ['Woordenschat', 'Zinnen Maken', 'Luisteroefeningen', 'Gesprekjes', 'Werkwoorden', 'Spelling']
     },
   ];
 
   const handleQuickStart = (subject: string) => {
-    console.log('Starting quick exercise for:', subject);
-    // Hier zou je naar de specifieke oefening navigeren
+    setSelectedSubject(subject);
+    setShowUploader(true);
   };
+
+  const handleAnalysisComplete = (exercises: any[]) => {
+    console.log('Generated exercises:', exercises);
+    // Hier zou je naar de oefeningen navigeren
+    setShowUploader(false);
+  };
+
+  if (showUploader && selectedSubject) {
+    const subject = quickAccess.find(s => s.subject === selectedSubject);
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4 mb-6">
+          <button
+            onClick={() => setShowUploader(false)}
+            className="text-gray-600 hover:text-gray-800 flex items-center gap-2"
+          >
+            ← Terug naar overzicht
+          </button>
+          <h2 className="text-2xl font-nunito font-bold text-gray-800">
+            {subject?.title} - Upload Voorbeeld
+          </h2>
+        </div>
+        
+        <FileUploader
+          subject={selectedSubject}
+          onAnalysisComplete={handleAnalysisComplete}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -46,11 +80,11 @@ const QuickAccessButtons: React.FC = () => {
             <Target className="w-6 h-6 text-white" />
           </div>
           <h2 className="text-3xl font-nunito font-bold text-gray-800">
-            Snelkoppelingen
+            Start Snel
           </h2>
         </div>
         <p className="text-gray-600 font-nunito text-lg">
-          Start direct met je favoriete vakken!
+          Upload een voorbeeldoefening en laat AI een vergelijkbare maken!
         </p>
       </div>
 
@@ -87,9 +121,10 @@ const QuickAccessButtons: React.FC = () => {
                 
                 <button
                   onClick={() => handleQuickStart(item.subject)}
-                  className={`w-full ${item.color} hover:opacity-90 text-white font-nunito font-bold py-3 px-6 rounded-xl transition-all`}
+                  className={`w-full ${item.color} hover:opacity-90 text-white font-nunito font-bold py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2`}
                 >
-                  Start Nu →
+                  <Upload className="w-4 h-4" />
+                  Upload Voorbeeld →
                 </button>
               </div>
             </div>

@@ -206,6 +206,45 @@ export type Database = {
           },
         ]
       }
+      exercise_examples: {
+        Row: {
+          ai_analysis: Json | null
+          created_at: string | null
+          file_name: string
+          file_path: string
+          file_type: string
+          generated_exercises: Json | null
+          id: string
+          subject: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_analysis?: Json | null
+          created_at?: string | null
+          file_name: string
+          file_path: string
+          file_type: string
+          generated_exercises?: Json | null
+          id?: string
+          subject: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_analysis?: Json | null
+          created_at?: string | null
+          file_name?: string
+          file_path?: string
+          file_type?: string
+          generated_exercises?: Json | null
+          id?: string
+          subject?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       exercise_results: {
         Row: {
           correct_answer: string
@@ -704,6 +743,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      recent_activity: {
+        Row: {
+          activity_type: string
+          child_id: string
+          completed_exercises: number | null
+          created_at: string | null
+          id: string
+          last_day: number | null
+          program_id: string | null
+          session_id: string | null
+          total_exercises: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          activity_type: string
+          child_id: string
+          completed_exercises?: number | null
+          created_at?: string | null
+          id?: string
+          last_day?: number | null
+          program_id?: string | null
+          session_id?: string | null
+          total_exercises?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          activity_type?: string
+          child_id?: string
+          completed_exercises?: number | null
+          created_at?: string | null
+          id?: string
+          last_day?: number | null
+          program_id?: string | null
+          session_id?: string | null
+          total_exercises?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       specific_tips: {
         Row: {

@@ -10,7 +10,7 @@ export interface WeekProgramProgress {
   program_id: string;
   current_day: number;
   completed_days: number[];
-  day_progress: any; // Changed from Record<string, any> to any to match Supabase Json type
+  day_progress: any;
   started_at: string;
   completed_at?: string;
   total_time_spent: number;
@@ -47,10 +47,16 @@ export const useWeekProgramProgress = (childId: string) => {
     }
   };
 
-  const startProgram = async (programId: string) => {
+  const startProgram = async (programId: string): Promise<WeekProgramProgress | null> => {
     if (!user || !childId) return null;
 
     try {
+      // Check if progress already exists
+      const existingProgress = progressData.find(p => p.program_id === programId && !p.completed_at);
+      if (existingProgress) {
+        return existingProgress;
+      }
+
       const { data, error } = await supabase
         .from('weekly_program_progress')
         .insert({
@@ -59,12 +65,17 @@ export const useWeekProgramProgress = (childId: string) => {
           current_day: 1,
           completed_days: [],
           day_progress: {},
-          total_time_spent: 0
+          total_time_spent: 0,
+          started_at: new Date().toISOString()
         })
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error starting program:', error);
+        toast.error('Fout bij starten programma');
+        return null;
+      }
 
       await loadProgress();
       toast.success('Weekprogramma gestart!');
@@ -124,11 +135,11 @@ export const useWeekProgramProgress = (childId: string) => {
     }
   };
 
-  const getCurrentProgress = (programId: string) => {
-    return progressData.find(p => p.program_id === programId && !p.completed_at);
+  const getCurrentProgress = (programId: string): WeekProgramProgress | null => {
+    return progressData.find(p => p.program_id === programId && !p.completed_at) || null;
   };
 
-  const getCompletedPrograms = () => {
+  const getCompletedPrograms = (): WeekProgramProgress[] => {
     return progressData.filter(p => p.completed_at);
   };
 

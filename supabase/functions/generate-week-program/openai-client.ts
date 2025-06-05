@@ -11,7 +11,16 @@ export class OpenAIClient {
     this.apiKey = apiKey;
   }
 
-  async generateCompletion(messages: OpenAIMessage[]): Promise<any> {
+  async generateCompletion(messages: OpenAIMessage[], model: string = 'gpt-4o-mini'): Promise<any> {
+    // Map the model names to OpenAI API format
+    const modelMap: { [key: string]: string } = {
+      'gpt-4o-mini': 'gpt-4o-mini',
+      'gpt-4o': 'gpt-4o',
+      'o4-mini-2025-04-16': 'o4-mini-2025-04-16'
+    };
+
+    const apiModel = modelMap[model] || 'gpt-4o-mini';
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -19,7 +28,7 @@ export class OpenAIClient {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: apiModel,
         messages,
         max_tokens: 4000,
         temperature: 0.7,

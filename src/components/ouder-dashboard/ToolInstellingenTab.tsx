@@ -6,9 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Shield, Bell, Eye, FileText, HelpCircle, Mail, Bug, Download, Trash2 } from 'lucide-react';
+import { Shield, Bell, Eye, FileText, HelpCircle, Mail, Bug, Download, Trash2, Settings } from 'lucide-react';
 import PrivacyDialog from './PrivacyDialog';
 import FAQDialog from './FAQDialog';
 
@@ -20,6 +21,10 @@ const ToolInstellingenTab = () => {
     data_collection_analytics: true,
     data_collection_personalization: true
   });
+  const [aiSettings, setAiSettings] = useState({
+    content_filter: 'medium',
+    language: 'nl'
+  });
   const [loading, setLoading] = useState(false);
   const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
   const [showFAQDialog, setShowFAQDialog] = useState(false);
@@ -27,6 +32,7 @@ const ToolInstellingenTab = () => {
   useEffect(() => {
     if (user) {
       loadPrivacySettings();
+      loadAISettings();
     }
   }, [user]);
 
@@ -58,12 +64,39 @@ const ToolInstellingenTab = () => {
     }
   };
 
-  const savePrivacySettings = async () => {
+  const loadAISettings = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('user_ai_config')
+        .select('content_filter, language')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading AI settings:', error);
+        return;
+      }
+
+      if (data) {
+        setAiSettings({
+          content_filter: data.content_filter || 'medium',
+          language: data.language || 'nl'
+        });
+      }
+    } catch (error) {
+      console.error('Error loading AI settings:', error);
+    }
+  };
+
+  const saveAllSettings = async () => {
     if (!user) return;
 
     setLoading(true);
     try {
-      const { error } = await supabase
+      // Save privacy settings
+      const { error: privacyError } = await supabase
         .from('user_privacy_settings')
         .upsert({
           user_id: user.id,
@@ -71,23 +104,46 @@ const ToolInstellingenTab = () => {
           updated_at: new Date().toISOString()
         });
 
-      if (error) {
-        console.error('Error saving privacy settings:', error);
+      if (privacyError) {
+        console.error('Error saving privacy settings:', privacyError);
         toast.error('Fout bij opslaan privacy instellingen');
         return;
       }
 
-      toast.success('Privacy instellingen opgeslagen');
+      // Save AI settings
+      const { error: aiError } = await supabase
+        .from('user_ai_config')
+        .upsert({
+          user_id: user.id,
+          content_filter: aiSettings.content_filter,
+          language: aiSettings.language,
+          updated_at: new Date().toISOString()
+        });
+
+      if (aiError) {
+        console.error('Error saving AI settings:', aiError);
+        toast.error('Fout bij opslaan AI instellingen');
+        return;
+      }
+
+      toast.success('Alle instellingen opgeslagen');
     } catch (error) {
-      console.error('Error saving privacy settings:', error);
-      toast.error('Fout bij opslaan privacy instellingen');
+      console.error('Error saving settings:', error);
+      toast.error('Fout bij opslaan instellingen');
     } finally {
       setLoading(false);
     }
   };
 
-  const updateSetting = (key: keyof typeof privacySettings, value: boolean) => {
+  const updatePrivacySetting = (key: keyof typeof privacySettings, value: boolean) => {
     setPrivacySettings(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  const updateAISetting = (key: keyof typeof aiSettings, value: string) => {
+    setAiSettings(prev => ({
       ...prev,
       [key]: value
     }));
@@ -143,7 +199,7 @@ const ToolInstellingenTab = () => {
               </div>
               <Switch
                 checked={privacySettings.data_collection_analytics}
-                onCheckedChange={(value) => updateSetting('data_collection_analytics', value)}
+                onCheckedChange={(value) => updatePrivacySetting('data_collection_analytics', value)}
               />
             </div>
 
@@ -158,7 +214,7 @@ const ToolInstellingenTab = () => {
               </div>
               <Switch
                 checked={privacySettings.data_collection_personalization}
-                onCheckedChange={(value) => updateSetting('data_collection_personalization', value)}
+                onCheckedChange={(value) => updatePrivacySetting('data_collection_personalization', value)}
               />
             </div>
           </div>
@@ -187,7 +243,7 @@ const ToolInstellingenTab = () => {
               </div>
               <Switch
                 checked={privacySettings.weekly_reports}
-                onCheckedChange={(value) => updateSetting('weekly_reports', value)}
+                onCheckedChange={(value) => updatePrivacySetting('weekly_reports', value)}
               />
             </div>
 
@@ -202,8 +258,55 @@ const ToolInstellingenTab = () => {
               </div>
               <Switch
                 checked={privacySettings.level_change_notifications}
-                onCheckedChange={(value) => updateSetting('level_change_notifications', value)}
+                onCheckedChange={(value) => updatePrivacySetting('level_change_notifications', value)}
               />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* AI Settings */}
+      <Card className="bg-white">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="w-5 h-5 text-maitje-blue" />
+            AI Instellingen
+          </CardTitle>
+          <CardDescription>
+            Configureer hoe de AI inhoud filtert en welke taal wordt gebruikt.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-base">Content Filter</Label>
+              <Select value={aiSettings.content_filter} onValueChange={(value) => updateAISetting('content_filter', value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Laag - Minimale filtering</SelectItem>
+                  <SelectItem value="medium">Medium - Standaard filtering</SelectItem>
+                  <SelectItem value="high">Hoog - Strenge filtering</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-2">
+              <Label className="text-base">Taal</Label>
+              <Select value={aiSettings.language} onValueChange={(value) => updateAISetting('language', value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="nl">Nederlands</SelectItem>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="de">Deutsch</SelectItem>
+                  <SelectItem value="fr">Français</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardContent>
@@ -311,7 +414,7 @@ const ToolInstellingenTab = () => {
       {/* Save Button */}
       <div className="flex justify-end">
         <Button 
-          onClick={savePrivacySettings}
+          onClick={saveAllSettings}
           disabled={loading}
           className="px-8 bg-maitje-blue hover:bg-maitje-blue/90"
         >

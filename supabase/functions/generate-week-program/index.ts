@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.10';
@@ -94,7 +95,7 @@ BELANGRIJKE TIJD REGELS:
 - 15 min = 5-7 vragen, 30 min = 10-15 vragen, 45 min = 15-20 vragen
 
 THEMA REGELS:
-${formattedThema ? `Het thema is: "${formattedThema}"` : 'Geen specifiek thema'}
+${formattedTheme ? `Het thema is: "${formattedTheme}"` : 'Geen specifiek thema'}
 
 WELKE ONDERDELEN KRIJGEN THEMA:
 ✅ Thema toepassen op: Verhalen Rekenen, Begrijpend Lezen, Woordenschat, Engels Conversatie, Spelling in context
@@ -193,12 +194,12 @@ Zorg voor realistische tijdsschattingen en juiste thema toepassing!`;
       })) || []
     }));
 
-    console.log('Program generated successfully with theme:', formattedThema, 'Test mode:', isTestMode);
+    console.log('Program generated successfully with theme:', formattedTheme, 'Test mode:', isTestMode);
 
     return new Response(JSON.stringify({ 
       success: true, 
       programData: validatedProgram,
-      theme: formattedThema
+      theme: formattedTheme
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

@@ -48,6 +48,28 @@ const ProgramGeneratorBox: React.FC<ProgramGeneratorBoxProps> = ({
     }
   });
 
+  const handleSubjectToggle = (subject: string) => {
+    setSubjects(prev => ({
+      ...prev,
+      [subject]: {
+        ...prev[subject],
+        enabled: !prev[subject].enabled
+      }
+    }));
+  };
+
+  const handleSubtopicToggle = (subject: string, subtopic: string) => {
+    setSubjects(prev => ({
+      ...prev,
+      [subject]: {
+        ...prev[subject],
+        subtopics: prev[subject].subtopics.includes(subtopic)
+          ? prev[subject].subtopics.filter(t => t !== subtopic)
+          : [...prev[subject].subtopics, subtopic]
+      }
+    }));
+  };
+
   const handleGenerate = () => {
     const settings: GenerationSettings = {
       timePerDay,
@@ -136,7 +158,11 @@ const ProgramGeneratorBox: React.FC<ProgramGeneratorBoxProps> = ({
         {/* Vakken Selectie */}
         <div className="space-y-4">
           <h4 className="font-semibold text-gray-800">Vakken & Onderwerpen</h4>
-          <SubjectSelector subjects={subjects} onSubjectsChange={setSubjects} />
+          <SubjectSelector 
+            subjects={subjects} 
+            onSubjectToggle={handleSubjectToggle}
+            onSubtopicToggle={handleSubtopicToggle}
+          />
         </div>
       </div>
 

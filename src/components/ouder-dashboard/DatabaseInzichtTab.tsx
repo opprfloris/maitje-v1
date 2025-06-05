@@ -1,12 +1,38 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import TableSelector from './database/TableSelector';
-import DataDisplay from './database/DataDisplay';
+import TableSelector, { TableName } from './database/TableSelector';
+import DataDisplayContainer from './database/DataDisplayContainer';
 import AIQueriesLog from './database/AIQueriesLog';
 
 const DatabaseInzichtTab = () => {
-  const [selectedTable, setSelectedTable] = useState<string>('');
+  const [selectedTable, setSelectedTable] = useState<TableName>('profiles');
+  const [searchFilter, setSearchFilter] = useState('');
+
+  // Mock queries data for now
+  const mockQueries = [
+    {
+      id: 1,
+      query: "SELECT * FROM profiles WHERE created_at > '2024-01-01'",
+      timestamp: new Date().toISOString(),
+      executionTime: "45ms",
+      rowsAffected: 12
+    },
+    {
+      id: 2,
+      query: "SELECT COUNT(*) FROM children WHERE current_level > 5",
+      timestamp: new Date(Date.now() - 300000).toISOString(),
+      executionTime: "23ms",
+      rowsAffected: 8
+    },
+    {
+      id: 3,
+      query: "UPDATE daily_progress SET streak_days = streak_days + 1",
+      timestamp: new Date(Date.now() - 600000).toISOString(),
+      executionTime: "67ms",
+      rowsAffected: 24
+    }
+  ];
 
   return (
     <div className="space-y-6">
@@ -34,20 +60,25 @@ const DatabaseInzichtTab = () => {
           <TabsContent value="tables" className="space-y-6">
             <div className="maitje-card">
               <TableSelector 
-                onTableSelect={setSelectedTable}
                 selectedTable={selectedTable}
+                onTableChange={setSelectedTable}
+                searchFilter={searchFilter}
+                onSearchChange={setSearchFilter}
               />
             </div>
             {selectedTable && (
               <div className="maitje-card">
-                <DataDisplay tableName={selectedTable} />
+                <DataDisplayContainer 
+                  selectedTable={selectedTable} 
+                  searchFilter={searchFilter}
+                />
               </div>
             )}
           </TabsContent>
 
           <TabsContent value="queries" className="space-y-6">
             <div className="maitje-card">
-              <AIQueriesLog />
+              <AIQueriesLog queries={mockQueries} />
             </div>
           </TabsContent>
         </Tabs>

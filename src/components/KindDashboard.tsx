@@ -1,6 +1,5 @@
-
 import React, { useEffect, useState } from 'react';
-import { Book, Calculator, User, GraduationCap } from 'lucide-react';
+import { Book, Calculator, User, GraduationCap, Clock, Star, Target, TrendingUp, Globe, ChevronRight, Brain } from 'lucide-react';
 import { AppView } from './MaitjeApp';
 import { Helper } from '@/types/helpers';
 import { useAuth } from '@/contexts/AuthContext';

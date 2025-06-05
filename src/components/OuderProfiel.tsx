@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ArrowLeft, User, BarChart3, Database, Settings, BookOpen, MessageSquare } from 'lucide-react';
+import { ArrowLeft, User, BarChart3, Database, Settings, BookOpen } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import StatistiekenTab from './ouder-dashboard/StatistiekenTab';
@@ -8,7 +8,6 @@ import DatabaseInzichtTab from './ouder-dashboard/DatabaseInzichtTab';
 import KindInstellingenTab from './ouder-dashboard/KindInstellingenTab';
 import ToolInstellingenTab from './ouder-dashboard/ToolInstellingenTab';
 import LesprogrammaTab from './ouder-dashboard/LesprogrammaTab';
-import PromptInstellingenTab from './ouder-dashboard/PromptInstellingenTab';
 
 interface OuderProfielProps {
   onBack: () => void;
@@ -43,7 +42,7 @@ const OuderProfiel = ({ onBack }: OuderProfielProps) => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 mb-8">
+          <TabsList className="grid w-full grid-cols-5 mb-8">
             <TabsTrigger value="statistieken" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
               Statistieken
@@ -51,10 +50,6 @@ const OuderProfiel = ({ onBack }: OuderProfielProps) => {
             <TabsTrigger value="lesprogramma" className="flex items-center gap-2">
               <BookOpen className="w-4 h-4" />
               Lesprogramma
-            </TabsTrigger>
-            <TabsTrigger value="prompt-instellingen" className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4" />
-              Prompt Instellingen
             </TabsTrigger>
             <TabsTrigger value="database" className="flex items-center gap-2">
               <Database className="w-4 h-4" />
@@ -76,10 +71,6 @@ const OuderProfiel = ({ onBack }: OuderProfielProps) => {
 
           <TabsContent value="lesprogramma">
             <LesprogrammaTab />
-          </TabsContent>
-
-          <TabsContent value="prompt-instellingen">
-            <PromptInstellingenTab />
           </TabsContent>
 
           <TabsContent value="database">

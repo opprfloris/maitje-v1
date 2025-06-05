@@ -1,4 +1,3 @@
-
 export type Profile = {
   id: string;
   email: string;
@@ -149,4 +148,29 @@ export type QuestionFeedback = {
   user_feedback?: string;
   ai_feedback?: string;
   created_at: string;
+};
+
+export type AIDocument = {
+  id: string;
+  user_id: string;
+  document_name: string;
+  document_type: string;
+  file_path: string;
+  subject_category?: string;
+  description?: string;
+  tags?: string[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type PromptTemplate = {
+  id: string;
+  user_id: string;
+  template_name: string;
+  template_content: string;
+  category: string;
+  subject_type?: string;
+  is_public: boolean;
+  created_at: string;
+  updated_at: string;
 };

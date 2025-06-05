@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import AuthPage from './AuthPage';
@@ -7,8 +6,9 @@ import RekenenModule from './RekenenModule';
 import LezenModule from './LezenModule';
 import EngelsModule from './EngelsModule';
 import OuderProfiel from './OuderProfiel';
+import AIDashboard from './AIDashboard';
 
-export type AppView = 'dashboard' | 'rekenen' | 'lezen' | 'engels' | 'ouder';
+export type AppView = 'dashboard' | 'rekenen' | 'lezen' | 'engels' | 'ouder' | 'ai-dashboard';
 
 const AppContent = () => {
   const { user, loading, signOut } = useAuth();
@@ -68,6 +68,12 @@ const AppContent = () => {
       case 'ouder':
         return (
           <OuderProfiel
+            onBack={() => setCurrentView('dashboard')}
+          />
+        );
+      case 'ai-dashboard':
+        return (
+          <AIDashboard
             onBack={() => setCurrentView('dashboard')}
           />
         );

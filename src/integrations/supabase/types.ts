@@ -9,6 +9,45 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      ai_documents: {
+        Row: {
+          created_at: string
+          description: string | null
+          document_name: string
+          document_type: string
+          file_path: string
+          id: string
+          subject_category: string | null
+          tags: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          document_name: string
+          document_type: string
+          file_path: string
+          id?: string
+          subject_category?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          document_name?: string
+          document_type?: string
+          file_path?: string
+          id?: string
+          subject_category?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       children: {
         Row: {
           avatar_emoji: string | null
@@ -424,30 +463,78 @@ export type Database = {
         }
         Relationships: []
       }
+      prompt_templates: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          is_public: boolean
+          subject_type: string | null
+          template_content: string
+          template_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          subject_type?: string | null
+          template_content: string
+          template_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          subject_type?: string | null
+          template_content?: string
+          template_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       prompt_versions: {
         Row: {
           created_at: string
+          description: string | null
           id: string
           is_active: boolean
           prompt_content: string
+          success_rate: number | null
+          tags: string[] | null
+          test_count: number | null
           updated_at: string
           user_id: string
           version_name: string
         }
         Insert: {
           created_at?: string
+          description?: string | null
           id?: string
           is_active?: boolean
           prompt_content: string
+          success_rate?: number | null
+          tags?: string[] | null
+          test_count?: number | null
           updated_at?: string
           user_id: string
           version_name: string
         }
         Update: {
           created_at?: string
+          description?: string | null
           id?: string
           is_active?: boolean
           prompt_content?: string
+          success_rate?: number | null
+          tags?: string[] | null
+          test_count?: number | null
           updated_at?: string
           user_id?: string
           version_name?: string

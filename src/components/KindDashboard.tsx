@@ -53,7 +53,7 @@ const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
     if (aiPincode === '1234' || aiPincode === '0000') {
       setShowAIPincode(false);
       setAIPincode('');
-      onNavigate('ai-dashboard');
+      onNavigate('dev-dashboard'); // Changed from 'ai-dashboard' to 'dev-dashboard'
     } else {
       alert('Onjuiste pincode. Probeer 1234.');
       setAIPincode('');
@@ -281,7 +281,7 @@ const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
           className="flex items-center gap-2 p-3 text-gray-500 hover:text-gray-700 transition-colors"
         >
           <Brain className="w-5 h-5" />
-          <span className="text-sm">AI Instellingen</span>
+          <span className="text-sm">Dev Instellingen</span>
           <span className="text-lg">🔒</span>
         </button>
       </div>
@@ -291,10 +291,10 @@ const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-xl shadow-xl max-w-md w-full mx-4">
             <h3 className="text-xl font-nunito font-bold text-gray-800 mb-4">
-              AI Instellingen Toegang
+              Dev Instellingen Toegang
             </h3>
             <p className="text-gray-600 mb-6">
-              Voer de pincode in voor toegang tot geavanceerde AI instellingen.
+              Voer de pincode in voor toegang tot ontwikkelaar instellingen.
             </p>
             <form onSubmit={handleAIPincodeSubmit}>
               <input

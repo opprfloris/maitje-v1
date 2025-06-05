@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -180,7 +179,7 @@ const ToolInstellingenTab = () => {
   };
 
   return (
-    <div className="space-y-6 bg-maitje-cream min-h-screen p-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-nunito font-bold text-gray-800">Tool Instellingen</h2>
@@ -189,276 +188,257 @@ const ToolInstellingenTab = () => {
       </div>
 
       {/* Privacy Settings */}
-      <Card className="bg-white">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-maitje-blue" />
-            Privacy Instellingen
-          </CardTitle>
-          <CardDescription>
-            Beheer hoe je gegevens worden gebruikt en welke data wordt verzameld.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-base">Data verzameling voor analytics</Label>
-                <p className="text-sm text-muted-foreground">
-                  Sta anonieme data verzameling toe om de app te verbeteren
-                </p>
-              </div>
-              <Switch
-                checked={privacySettings.data_collection_analytics}
-                onCheckedChange={(value) => updatePrivacySetting('data_collection_analytics', value)}
-              />
-            </div>
-
-            <Separator />
-
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-base">Data verzameling voor personalisatie</Label>
-                <p className="text-sm text-muted-foreground">
-                  Gebruik leergedrag om de ervaring te personaliseren
-                </p>
-              </div>
-              <Switch
-                checked={privacySettings.data_collection_personalization}
-                onCheckedChange={(value) => updatePrivacySetting('data_collection_personalization', value)}
-              />
-            </div>
+      <div className="maitje-card">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 bg-maitje-blue rounded-xl flex items-center justify-center">
+            <Shield className="w-6 h-6 text-white" />
           </div>
-        </CardContent>
-      </Card>
+          <div>
+            <h3 className="text-xl font-nunito font-bold text-gray-800">Privacy Instellingen</h3>
+            <p className="text-gray-600">Beheer hoe je gegevens worden gebruikt en welke data wordt verzameld</p>
+          </div>
+        </div>
+        
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-maitje-cream rounded-xl">
+            <div className="space-y-0.5">
+              <Label className="text-base font-semibold">Data verzameling voor analytics</Label>
+              <p className="text-sm text-gray-600">
+                Sta anonieme data verzameling toe om de app te verbeteren
+              </p>
+            </div>
+            <Switch
+              checked={privacySettings.data_collection_analytics}
+              onCheckedChange={(value) => updatePrivacySetting('data_collection_analytics', value)}
+            />
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-maitje-cream rounded-xl">
+            <div className="space-y-0.5">
+              <Label className="text-base font-semibold">Data verzameling voor personalisatie</Label>
+              <p className="text-sm text-gray-600">
+                Gebruik leergedrag om de ervaring te personaliseren
+              </p>
+            </div>
+            <Switch
+              checked={privacySettings.data_collection_personalization}
+              onCheckedChange={(value) => updatePrivacySetting('data_collection_personalization', value)}
+            />
+          </div>
+        </div>
+      </div>
 
       {/* Notification Settings */}
-      <Card className="bg-white">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="w-5 h-5 text-maitje-blue" />
-            Notificatie Instellingen
-          </CardTitle>
-          <CardDescription>
-            Kies welke meldingen je wilt ontvangen.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-base">Wekelijkse rapporten</Label>
-                <p className="text-sm text-muted-foreground">
-                  Ontvang wekelijkse voortgangsrapporten per email
-                </p>
-              </div>
-              <Switch
-                checked={privacySettings.weekly_reports}
-                onCheckedChange={(value) => updatePrivacySetting('weekly_reports', value)}
-              />
-            </div>
-
-            <Separator />
-
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-base">Niveau wijziging meldingen</Label>
-                <p className="text-sm text-muted-foreground">
-                  Krijg een melding wanneer je kind een niveau omhoog gaat
-                </p>
-              </div>
-              <Switch
-                checked={privacySettings.level_change_notifications}
-                onCheckedChange={(value) => updatePrivacySetting('level_change_notifications', value)}
-              />
-            </div>
+      <div className="maitje-card">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 bg-maitje-green rounded-xl flex items-center justify-center">
+            <Bell className="w-6 h-6 text-white" />
           </div>
-        </CardContent>
-      </Card>
+          <div>
+            <h3 className="text-xl font-nunito font-bold text-gray-800">Notificatie Instellingen</h3>
+            <p className="text-gray-600">Kies welke meldingen je wilt ontvangen</p>
+          </div>
+        </div>
+        
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-maitje-cream rounded-xl">
+            <div className="space-y-0.5">
+              <Label className="text-base font-semibold">Wekelijkse rapporten</Label>
+              <p className="text-sm text-gray-600">
+                Ontvang wekelijkse voortgangsrapporten per email
+              </p>
+            </div>
+            <Switch
+              checked={privacySettings.weekly_reports}
+              onCheckedChange={(value) => updatePrivacySetting('weekly_reports', value)}
+            />
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-maitje-cream rounded-xl">
+            <div className="space-y-0.5">
+              <Label className="text-base font-semibold">Niveau wijziging meldingen</Label>
+              <p className="text-sm text-gray-600">
+                Krijg een melding wanneer je kind een niveau omhoog gaat
+              </p>
+            </div>
+            <Switch
+              checked={privacySettings.level_change_notifications}
+              onCheckedChange={(value) => updatePrivacySetting('level_change_notifications', value)}
+            />
+          </div>
+        </div>
+      </div>
 
       {/* AI Settings */}
-      <Card className="bg-white">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="w-5 h-5 text-maitje-blue" />
-            AI Instellingen
-          </CardTitle>
-          <CardDescription>
-            Configureer hoe de AI inhoud filtert en welke taal wordt gebruikt.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-base">Content Filter</Label>
-              <Select value={aiSettings.content_filter} onValueChange={(value) => updateAISetting('content_filter', value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Laag - Minimale filtering</SelectItem>
-                  <SelectItem value="medium">Medium - Standaard filtering</SelectItem>
-                  <SelectItem value="high">Hoog - Strenge filtering</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-2">
-              <Label className="text-base">Taal</Label>
-              <Select value={aiSettings.language} onValueChange={(value) => updateAISetting('language', value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="nl">Nederlands</SelectItem>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="de">Deutsch</SelectItem>
-                  <SelectItem value="fr">Français</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+      <div className="maitje-card">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center">
+            <Settings className="w-6 h-6 text-white" />
           </div>
-        </CardContent>
-      </Card>
+          <div>
+            <h3 className="text-xl font-nunito font-bold text-gray-800">AI Instellingen</h3>
+            <p className="text-gray-600">Configureer hoe de AI inhoud filtert en welke taal wordt gebruikt</p>
+          </div>
+        </div>
+        
+        <div className="space-y-4">
+          <div className="p-4 bg-maitje-cream rounded-xl">
+            <Label className="text-base font-semibold">Content Filter</Label>
+            <p className="text-sm text-gray-600 mb-3">Stel de strengheid van content filtering in</p>
+            <Select value={aiSettings.content_filter} onValueChange={(value) => updateAISetting('content_filter', value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Laag - Minimale filtering</SelectItem>
+                <SelectItem value="medium">Medium - Standaard filtering</SelectItem>
+                <SelectItem value="high">Hoog - Strenge filtering</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="p-4 bg-maitje-cream rounded-xl">
+            <Label className="text-base font-semibold">Taal</Label>
+            <p className="text-sm text-gray-600 mb-3">Kies de hoofdtaal voor de AI</p>
+            <Select value={aiSettings.language} onValueChange={(value) => updateAISetting('language', value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="nl">Nederlands</SelectItem>
+                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="de">Deutsch</SelectItem>
+                <SelectItem value="fr">Français</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
 
       {/* Toegang & Beveiliging */}
-      <Card className="bg-white">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Lock className="w-5 h-5 text-maitje-blue" />
-            Toegang & Beveiliging
-          </CardTitle>
-          <CardDescription>
-            Beheer toegangscodes en beveiligingsinstellingen.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-base">Ouder Dashboard Pincode</Label>
-              <p className="text-sm text-muted-foreground">
-                Wijzig de pincode voor toegang tot het ouder dashboard (4 cijfers)
-              </p>
-              <Input
-                type="password"
-                value={ouderPincode}
-                onChange={(e) => setOuderPincode(e.target.value.slice(0, 4))}
-                placeholder="Voer nieuwe pincode in"
-                maxLength={4}
-                className="max-w-xs text-center tracking-widest"
-              />
-            </div>
+      <div className="maitje-card">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center">
+            <Lock className="w-6 h-6 text-white" />
           </div>
-        </CardContent>
-      </Card>
+          <div>
+            <h3 className="text-xl font-nunito font-bold text-gray-800">Toegang & Beveiliging</h3>
+            <p className="text-gray-600">Beheer toegangscodes en beveiligingsinstellingen</p>
+          </div>
+        </div>
+        
+        <div className="p-4 bg-maitje-cream rounded-xl">
+          <Label className="text-base font-semibold">Ouder Dashboard Pincode</Label>
+          <p className="text-sm text-gray-600 mb-3">
+            Wijzig de pincode voor toegang tot het ouder dashboard (4 cijfers)
+          </p>
+          <Input
+            type="password"
+            value={ouderPincode}
+            onChange={(e) => setOuderPincode(e.target.value.slice(0, 4))}
+            placeholder="Voer nieuwe pincode in"
+            maxLength={4}
+            className="max-w-xs text-center tracking-widest"
+          />
+        </div>
+      </div>
 
       {/* Privacy & Help Documents */}
-      <Card className="bg-white">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5 text-maitje-blue" />
-            Privacy & Help
-          </CardTitle>
-          <CardDescription>
-            Bekijk belangrijke documenten en krijg hulp.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Button 
-              variant="outline" 
-              className="w-full"
-              onClick={() => setShowPrivacyDialog(true)}
-            >
-              <Shield className="w-4 h-4 mr-2" />
-              Privacy Beleid
-            </Button>
-            <Button 
-              variant="outline" 
-              className="w-full"
-              onClick={() => setShowFAQDialog(true)}
-            >
-              <HelpCircle className="w-4 h-4 mr-2" />
-              FAQ / Hulp
-            </Button>
+      <div className="maitje-card">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
+            <FileText className="w-6 h-6 text-white" />
           </div>
-        </CardContent>
-      </Card>
+          <div>
+            <h3 className="text-xl font-nunito font-bold text-gray-800">Privacy & Help</h3>
+            <p className="text-gray-600">Bekijk belangrijke documenten en krijg hulp</p>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <button 
+            onClick={() => setShowPrivacyDialog(true)}
+            className="maitje-button-secondary flex items-center justify-center gap-2"
+          >
+            <Shield className="w-4 h-4" />
+            Privacy Beleid
+          </button>
+          <button 
+            onClick={() => setShowFAQDialog(true)}
+            className="maitje-button-secondary flex items-center justify-center gap-2"
+          >
+            <HelpCircle className="w-4 h-4" />
+            FAQ / Hulp
+          </button>
+        </div>
+      </div>
 
       {/* Contact & Support */}
-      <Card className="bg-white">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Mail className="w-5 h-5 text-maitje-blue" />
-            Contact & Support
-          </CardTitle>
-          <CardDescription>
-            Neem contact op voor hulp of rapporteer problemen.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Button 
-              variant="outline" 
-              className="w-full"
-              onClick={handleContactSupport}
-            >
-              <Mail className="w-4 h-4 mr-2" />
-              Contact Support
-            </Button>
-            <Button 
-              variant="outline" 
-              className="w-full"
-              onClick={handleBugReport}
-            >
-              <Bug className="w-4 h-4 mr-2" />
-              Bug Rapporteren
-            </Button>
+      <div className="maitje-card">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center">
+            <Mail className="w-6 h-6 text-white" />
           </div>
-        </CardContent>
-      </Card>
+          <div>
+            <h3 className="text-xl font-nunito font-bold text-gray-800">Contact & Support</h3>
+            <p className="text-gray-600">Neem contact op voor hulp of rapporteer problemen</p>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <button 
+            onClick={handleContactSupport}
+            className="maitje-button-secondary flex items-center justify-center gap-2"
+          >
+            <Mail className="w-4 h-4" />
+            Contact Support
+          </button>
+          <button 
+            onClick={handleBugReport}
+            className="maitje-button-secondary flex items-center justify-center gap-2"
+          >
+            <Bug className="w-4 h-4" />
+            Bug Rapporteren
+          </button>
+        </div>
+      </div>
 
       {/* Data Export & Account */}
-      <Card className="bg-white">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Eye className="w-5 h-5 text-maitje-blue" />
-            Data & Account Beheer
-          </CardTitle>
-          <CardDescription>
-            Download je gegevens of verwijder je account.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <Button 
-              variant="outline" 
-              className="w-full"
-              onClick={handleDataExport}
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Download mijn gegevens
-            </Button>
-            <Button 
-              variant="outline" 
-              className="w-full text-red-600 border-red-200 hover:bg-red-50"
-              onClick={handleAccountDeletion}
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Account verwijderen
-            </Button>
+      <div className="maitje-card">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 bg-gray-500 rounded-xl flex items-center justify-center">
+            <Eye className="w-6 h-6 text-white" />
           </div>
-        </CardContent>
-      </Card>
+          <div>
+            <h3 className="text-xl font-nunito font-bold text-gray-800">Data & Account Beheer</h3>
+            <p className="text-gray-600">Download je gegevens of verwijder je account</p>
+          </div>
+        </div>
+        
+        <div className="space-y-4">
+          <button 
+            onClick={handleDataExport}
+            className="maitje-button-secondary w-full flex items-center justify-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            Download mijn gegevens
+          </button>
+          <button 
+            onClick={handleAccountDeletion}
+            className="w-full p-3 border border-red-200 text-red-600 rounded-xl hover:bg-red-50 transition-colors flex items-center justify-center gap-2"
+          >
+            <Trash2 className="w-4 h-4" />
+            Account verwijderen
+          </button>
+        </div>
+      </div>
 
       {/* Save Button */}
-      <div className="flex justify-end">
-        <Button 
+      <div className="flex justify-center">
+        <button 
           onClick={saveAllSettings}
           disabled={loading}
-          className="px-8 bg-maitje-blue hover:bg-maitje-blue/90"
+          className="maitje-button px-8"
         >
           {loading ? (
             <>
@@ -468,7 +448,7 @@ const ToolInstellingenTab = () => {
           ) : (
             'Instellingen Opslaan'
           )}
-        </Button>
+        </button>
       </div>
 
       {/* Dialogs */}

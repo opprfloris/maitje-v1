@@ -112,7 +112,7 @@ const WeekProgramSelector = ({ childId, onSelectProgram, onBack }: WeekProgramSe
                         {getStatusText(program.status)}
                       </Badge>
                       <Badge variant="outline">
-                        {program.subject}
+                        {program.difficulty_level || 'Standaard'}
                       </Badge>
                     </div>
                   </div>

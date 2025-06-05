@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 interface TestSettings {
   module: string;
   niveau: string;
-  thema: string;
+  thema?: string;
   aantal_items: number;
 }
 
@@ -55,7 +55,7 @@ export const usePromptStudio = () => {
         .from('prompt_mini_sessions')
         .insert({
           prompt_version_id: selectedVersion,
-          test_settings: testSettings,
+          test_settings: testSettings as any,
           generated_content: [],
           user_id: user.id
         })
@@ -82,7 +82,7 @@ export const usePromptStudio = () => {
       await supabase
         .from('prompt_mini_sessions')
         .update({
-          generated_content: content
+          generated_content: content as any
         })
         .eq('id', sessionData.id);
 
@@ -116,7 +116,7 @@ export const usePromptStudio = () => {
           .insert({
             session_id: currentSessionId,
             prompt_version_id: selectedVersion,
-            exercise_data: exercise,
+            exercise_data: exercise as any,
             relevance_rating: exerciseFeedback.relevance_rating,
             correctness_rating: exerciseFeedback.correctness_rating,
             difficulty_rating: exerciseFeedback.difficulty_rating,

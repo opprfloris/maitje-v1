@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Book, Calculator, User, GraduationCap, Clock, Star, Target, TrendingUp, Globe, ChevronRight, Brain } from 'lucide-react';
 import { AppView } from './MaitjeApp';
@@ -17,6 +18,8 @@ const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
   const { profile } = useAuth();
   const [selectedHelper, setSelectedHelper] = useState<Helper | null>(null);
   const [showProgramma, setShowProgramma] = useState(false);
+  const [showAIPincode, setShowAIPincode] = useState(false);
+  const [aiPincode, setAIPincode] = useState('');
   
   const { currentTip, loading: tipLoading } = useHelperTips(selectedHelper);
   const { items, loading: planLoading } = useDailyPlan('dummy-child-id'); // We'll use a dummy ID for now
@@ -32,6 +35,23 @@ const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
 
   const exitProgramma = () => {
     setShowProgramma(false);
+  };
+
+  const handleAIAccess = () => {
+    setShowAIPincode(true);
+  };
+
+  const handleAIPincodeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Simple pincode check - in production this should be more secure
+    if (aiPincode === '1234' || aiPincode === '0000') {
+      setShowAIPincode(false);
+      setAIPincode('');
+      onNavigate('ai-dashboard');
+    } else {
+      alert('Onjuiste pincode. Probeer 1234.');
+      setAIPincode('');
+    }
   };
 
   // Load helper from localStorage on mount
@@ -225,17 +245,72 @@ const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
         </button>
       </div>
 
-      {/* Ouder toegang */}
-      <div className="text-center">
+      {/* Toegang knoppen */}
+      <div className="flex justify-center gap-8">
         <button
           onClick={() => onNavigate('ouder')}
-          className="flex items-center gap-2 mx-auto p-3 text-gray-500 hover:text-gray-700 transition-colors"
+          className="flex items-center gap-2 p-3 text-gray-500 hover:text-gray-700 transition-colors"
         >
           <User className="w-5 h-5" />
           <span className="text-sm">Ouder Dashboard</span>
           <span className="text-lg">🔒</span>
         </button>
+        
+        <button
+          onClick={handleAIAccess}
+          className="flex items-center gap-2 p-3 text-gray-500 hover:text-gray-700 transition-colors"
+        >
+          <Brain className="w-5 h-5" />
+          <span className="text-sm">AI Instellingen</span>
+          <span className="text-lg">🔒</span>
+        </button>
       </div>
+
+      {/* AI Pincode Modal */}
+      {showAIPincode && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-xl shadow-xl max-w-md w-full mx-4">
+            <h3 className="text-xl font-nunito font-bold text-gray-800 mb-4">
+              AI Instellingen Toegang
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Voer de pincode in voor toegang tot geavanceerde AI instellingen.
+            </p>
+            <form onSubmit={handleAIPincodeSubmit}>
+              <input
+                type="password"
+                value={aiPincode}
+                onChange={(e) => setAIPincode(e.target.value)}
+                placeholder="Voer pincode in"
+                className="w-full p-3 border border-gray-300 rounded-lg mb-4 text-center text-xl tracking-widest"
+                maxLength={4}
+                autoFocus
+              />
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAIPincode(false);
+                    setAIPincode('');
+                  }}
+                  className="flex-1 p-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                >
+                  Annuleren
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 p-3 bg-maitje-blue text-white rounded-lg hover:bg-maitje-blue/90"
+                >
+                  Toegang
+                </button>
+              </div>
+            </form>
+            <p className="text-xs text-gray-500 mt-4 text-center">
+              Tip: Probeer 1234 voor demo toegang
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

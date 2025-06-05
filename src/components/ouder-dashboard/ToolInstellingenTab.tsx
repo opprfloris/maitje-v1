@@ -8,7 +8,9 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Shield, Bell, Eye, FileText, Brain } from 'lucide-react';
+import { Shield, Bell, Eye, FileText, HelpCircle, Mail, Bug, Download, Trash2 } from 'lucide-react';
+import PrivacyDialog from './PrivacyDialog';
+import FAQDialog from './FAQDialog';
 
 const ToolInstellingenTab = () => {
   const { user } = useAuth();
@@ -19,6 +21,8 @@ const ToolInstellingenTab = () => {
     data_collection_personalization: true
   });
   const [loading, setLoading] = useState(false);
+  const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
+  const [showFAQDialog, setShowFAQDialog] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -89,8 +93,27 @@ const ToolInstellingenTab = () => {
     }));
   };
 
+  const handleDataExport = () => {
+    toast.info('Data export functionaliteit komt binnenkort beschikbaar');
+  };
+
+  const handleAccountDeletion = () => {
+    toast.info('Voor account verwijdering, neem contact op via support@maitje.nl');
+  };
+
+  const handleBugReport = () => {
+    const subject = encodeURIComponent('Bug Report - mAItje App');
+    const body = encodeURIComponent('Beschrijf hier de bug die je hebt gevonden:\n\n1. Wat deed je toen de bug optrad?\n2. Wat verwachtte je dat er zou gebeuren?\n3. Wat gebeurde er in plaats daarvan?\n\nExtra informatie:\n- Browser: \n- Apparaat: \n- Datum/tijd: ');
+    window.open(`mailto:support@maitje.nl?subject=${subject}&body=${body}`);
+  };
+
+  const handleContactSupport = () => {
+    const subject = encodeURIComponent('Support - mAItje App');
+    window.open(`mailto:support@maitje.nl?subject=${subject}`);
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-maitje-cream min-h-screen p-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-nunito font-bold text-gray-800">Tool Instellingen</h2>
@@ -98,27 +121,8 @@ const ToolInstellingenTab = () => {
         </div>
       </div>
 
-      {/* AI Settings Notice */}
-      <Card className="border-l-4 border-l-maitje-blue bg-blue-50">
-        <CardContent className="pt-6">
-          <div className="flex items-start gap-3">
-            <Brain className="w-5 h-5 text-maitje-blue mt-1" />
-            <div>
-              <h3 className="font-semibold text-gray-800 mb-2">AI Instellingen Verplaatst</h3>
-              <p className="text-gray-700 mb-3">
-                AI model configuratie en prompt instellingen zijn verplaatst naar het nieuwe AI Dashboard 
-                voor een betere ontwikkelaarservaring.
-              </p>
-              <p className="text-sm text-gray-600">
-                Gebruik de "AI Instellingen" knop onderin het dashboard voor geavanceerde AI configuratie.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Privacy Settings */}
-      <Card>
+      <Card className="bg-white">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="w-5 h-5 text-maitje-blue" />
@@ -162,7 +166,7 @@ const ToolInstellingenTab = () => {
       </Card>
 
       {/* Notification Settings */}
-      <Card>
+      <Card className="bg-white">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Bell className="w-5 h-5 text-maitje-blue" />
@@ -205,12 +209,78 @@ const ToolInstellingenTab = () => {
         </CardContent>
       </Card>
 
-      {/* Data Export */}
-      <Card>
+      {/* Privacy & Help Documents */}
+      <Card className="bg-white">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-maitje-blue" />
-            Data Export
+            Privacy & Help
+          </CardTitle>
+          <CardDescription>
+            Bekijk belangrijke documenten en krijg hulp.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => setShowPrivacyDialog(true)}
+            >
+              <Shield className="w-4 h-4 mr-2" />
+              Privacy Beleid
+            </Button>
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => setShowFAQDialog(true)}
+            >
+              <HelpCircle className="w-4 h-4 mr-2" />
+              FAQ / Hulp
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Contact & Support */}
+      <Card className="bg-white">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Mail className="w-5 h-5 text-maitje-blue" />
+            Contact & Support
+          </CardTitle>
+          <CardDescription>
+            Neem contact op voor hulp of rapporteer problemen.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={handleContactSupport}
+            >
+              <Mail className="w-4 h-4 mr-2" />
+              Contact Support
+            </Button>
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={handleBugReport}
+            >
+              <Bug className="w-4 h-4 mr-2" />
+              Bug Rapporteren
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Data Export & Account */}
+      <Card className="bg-white">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Eye className="w-5 h-5 text-maitje-blue" />
+            Data & Account Beheer
           </CardTitle>
           <CardDescription>
             Download je gegevens of verwijder je account.
@@ -218,12 +288,20 @@ const ToolInstellingenTab = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <Button variant="outline" className="w-full">
-              <FileText className="w-4 h-4 mr-2" />
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={handleDataExport}
+            >
+              <Download className="w-4 h-4 mr-2" />
               Download mijn gegevens
             </Button>
-            <Button variant="outline" className="w-full text-red-600 border-red-200 hover:bg-red-50">
-              <Eye className="w-4 h-4 mr-2" />
+            <Button 
+              variant="outline" 
+              className="w-full text-red-600 border-red-200 hover:bg-red-50"
+              onClick={handleAccountDeletion}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
               Account verwijderen
             </Button>
           </div>
@@ -235,7 +313,7 @@ const ToolInstellingenTab = () => {
         <Button 
           onClick={savePrivacySettings}
           disabled={loading}
-          className="px-8"
+          className="px-8 bg-maitje-blue hover:bg-maitje-blue/90"
         >
           {loading ? (
             <>
@@ -247,6 +325,16 @@ const ToolInstellingenTab = () => {
           )}
         </Button>
       </div>
+
+      {/* Dialogs */}
+      <PrivacyDialog
+        isOpen={showPrivacyDialog}
+        onClose={() => setShowPrivacyDialog(false)}
+      />
+      <FAQDialog
+        isOpen={showFAQDialog}
+        onClose={() => setShowFAQDialog(false)}
+      />
     </div>
   );
 };

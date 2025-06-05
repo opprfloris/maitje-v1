@@ -115,6 +115,20 @@ export type WeekProgramQuestion = {
   opties?: string[];
 };
 
+export type WeekProgramProgress = {
+  id: string;
+  child_id: string;
+  program_id: string;
+  current_day: number;
+  completed_days: number[];
+  day_progress: Record<string, any>;
+  started_at: string;
+  completed_at?: string;
+  total_time_spent: number;
+  created_at: string;
+  updated_at: string;
+};
+
 export type PromptVersion = {
   id: string;
   user_id: string;

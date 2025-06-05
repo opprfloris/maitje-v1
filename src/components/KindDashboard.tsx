@@ -1,6 +1,5 @@
-
 import React, { useEffect, useState } from 'react';
-import { Book, Calculator, User, GraduationCap, Clock, Star, Target, TrendingUp, Globe, ChevronRight, Brain } from 'lucide-react';
+import { Book, Calculator, User, GraduationCap, Clock, Star, Target, TrendingUp, Globe, ChevronRight, Brain, Calendar } from 'lucide-react';
 import { AppView } from './MaitjeApp';
 import { Helper } from '@/types/helpers';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,6 +7,8 @@ import HelperSelector from './HelperSelector';
 import { useHelperTips } from '@/hooks/useHelperTips';
 import { useDailyPlan } from '@/hooks/useDailyPlan';
 import ProgrammaMode from './ProgrammaMode';
+import WeekProgramSelector from './weekprogram/WeekProgramSelector';
+import WeekProgramMode from './weekprogram/WeekProgramMode';
 
 interface Props {
   onNavigate: (view: AppView) => void;
@@ -18,6 +19,8 @@ const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
   const { profile } = useAuth();
   const [selectedHelper, setSelectedHelper] = useState<Helper | null>(null);
   const [showProgramma, setShowProgramma] = useState(false);
+  const [showWeekProgramSelector, setShowWeekProgramSelector] = useState(false);
+  const [selectedWeekProgram, setSelectedWeekProgram] = useState<string | null>(null);
   const [showAIPincode, setShowAIPincode] = useState(false);
   const [showOuderPincode, setShowOuderPincode] = useState(false);
   const [aiPincode, setAIPincode] = useState('');
@@ -37,6 +40,20 @@ const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
 
   const exitProgramma = () => {
     setShowProgramma(false);
+  };
+
+  const startWeekProgram = () => {
+    setShowWeekProgramSelector(true);
+  };
+
+  const handleSelectWeekProgram = (programId: string) => {
+    setSelectedWeekProgram(programId);
+    setShowWeekProgramSelector(false);
+  };
+
+  const exitWeekProgram = () => {
+    setSelectedWeekProgram(null);
+    setShowWeekProgramSelector(false);
   };
 
   const handleAIAccess = () => {
@@ -87,6 +104,29 @@ const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
   }, []);
 
   const childName = profile?.child_name || 'daar';
+
+  // Show different screens based on state
+  if (selectedWeekProgram) {
+    return (
+      <WeekProgramMode
+        programId={selectedWeekProgram}
+        childId="dummy-child-id"
+        childName={childName}
+        selectedHelper={selectedHelper}
+        onExit={exitWeekProgram}
+      />
+    );
+  }
+
+  if (showWeekProgramSelector) {
+    return (
+      <WeekProgramSelector
+        childId="dummy-child-id"
+        onSelectProgram={handleSelectWeekProgram}
+        onBack={() => setShowWeekProgramSelector(false)}
+      />
+    );
+  }
 
   if (showProgramma) {
     return (
@@ -150,6 +190,47 @@ const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
         )}
       </div>
 
+      {/* Programma Keuze Sectie */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        {/* Weekprogramma Kaart */}
+        <div className="maitje-card hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-16 h-16 bg-purple-500 rounded-xl flex items-center justify-center">
+              <Calendar className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h3 className="text-2xl font-nunito font-bold text-gray-800">Weekprogramma</h3>
+              <p className="text-gray-600">Volg je wekelijkse leerplan</p>
+            </div>
+          </div>
+          <button 
+            onClick={startWeekProgram}
+            className="w-full maitje-button text-xl py-4"
+          >
+            Start Weekprogramma →
+          </button>
+        </div>
+
+        {/* Dagelijkse Oefeningen Kaart */}
+        <div className="maitje-card hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-16 h-16 bg-maitje-green rounded-xl flex items-center justify-center">
+              <Target className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h3 className="text-2xl font-nunito font-bold text-gray-800">Dagelijkse Oefeningen</h3>
+              <p className="text-gray-600">Losse oefeningen per vak</p>
+            </div>
+          </div>
+          <button 
+            onClick={startProgramma}
+            className="w-full bg-maitje-green hover:bg-green-600 text-white font-bold py-4 px-6 rounded-xl transition-colors text-xl"
+          >
+            Start Oefeningen →
+          </button>
+        </div>
+      </div>
+
       {/* Jouw mAItje Plan voor Vandaag */}
       <div className="maitje-card mb-8">
         <h2 className="text-2xl font-nunito font-bold text-gray-800 mb-4 flex items-center gap-3">
@@ -164,53 +245,44 @@ const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
             <p className="text-gray-600 font-nunito">Plan laden...</p>
           </div>
         ) : (
-          <>
-            <div className="grid gap-4 mb-6">
-              {items.map((item, index) => (
-                <div 
-                  key={item.id}
-                  className={`flex items-center gap-4 p-4 bg-maitje-cream rounded-xl border-l-4 ${
-                    item.status === 'completed' 
-                      ? 'border-maitje-green bg-green-50' 
-                      : item.status === 'skipped'
-                      ? 'border-gray-400 bg-gray-50'
-                      : index === 0 ? 'border-maitje-green' 
-                      : index === 1 ? 'border-maitje-blue'
-                      : 'border-purple-500'
-                  }`}
-                >
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
-                    item.status === 'completed' 
-                      ? 'bg-maitje-green' 
-                      : item.status === 'skipped'
-                      ? 'bg-gray-400'
-                      : index === 0 ? 'bg-maitje-green' 
-                      : index === 1 ? 'bg-maitje-blue'
-                      : 'bg-purple-500'
-                  }`}>
-                    {item.status === 'completed' ? '✓' : item.status === 'skipped' ? '⏭' : index + 1}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-800">{item.title}</p>
-                    <p className="text-sm text-gray-600">{item.description}</p>
-                  </div>
-                  {item.status === 'completed' && (
-                    <div className="ml-auto text-maitje-green font-bold">Voltooid! ⭐</div>
-                  )}
-                  {item.status === 'skipped' && (
-                    <div className="ml-auto text-gray-500 font-bold">Overgeslagen</div>
-                  )}
+          <div className="grid gap-4 mb-6">
+            {items.map((item, index) => (
+              <div 
+                key={item.id}
+                className={`flex items-center gap-4 p-4 bg-maitje-cream rounded-xl border-l-4 ${
+                  item.status === 'completed' 
+                    ? 'border-maitje-green bg-green-50' 
+                    : item.status === 'skipped'
+                    ? 'border-gray-400 bg-gray-50'
+                    : index === 0 ? 'border-maitje-green' 
+                    : index === 1 ? 'border-maitje-blue'
+                    : 'border-purple-500'
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
+                  item.status === 'completed' 
+                    ? 'bg-maitje-green' 
+                    : item.status === 'skipped'
+                    ? 'bg-gray-400'
+                    : index === 0 ? 'bg-maitje-green' 
+                    : index === 1 ? 'bg-maitje-blue'
+                    : 'bg-purple-500'
+                }`}>
+                  {item.status === 'completed' ? '✓' : item.status === 'skipped' ? '⏭' : index + 1}
                 </div>
-              ))}
-            </div>
-            
-            <button 
-              onClick={startProgramma}
-              className="w-full maitje-button text-xl py-6"
-            >
-              Start Programma →
-            </button>
-          </>
+                <div>
+                  <p className="font-semibold text-gray-800">{item.title}</p>
+                  <p className="text-sm text-gray-600">{item.description}</p>
+                </div>
+                {item.status === 'completed' && (
+                  <div className="ml-auto text-maitje-green font-bold">Voltooid! ⭐</div>
+                )}
+                {item.status === 'skipped' && (
+                  <div className="ml-auto text-gray-500 font-bold">Overgeslagen</div>
+                )}
+              </div>
+            ))}
+          </div>
         )}
       </div>
 

@@ -731,6 +731,56 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_program_progress: {
+        Row: {
+          child_id: string
+          completed_at: string | null
+          completed_days: number[] | null
+          created_at: string | null
+          current_day: number | null
+          day_progress: Json | null
+          id: string
+          program_id: string
+          started_at: string | null
+          total_time_spent: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          child_id: string
+          completed_at?: string | null
+          completed_days?: number[] | null
+          created_at?: string | null
+          current_day?: number | null
+          day_progress?: Json | null
+          id?: string
+          program_id: string
+          started_at?: string | null
+          total_time_spent?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          child_id?: string
+          completed_at?: string | null
+          completed_days?: number[] | null
+          created_at?: string | null
+          current_day?: number | null
+          day_progress?: Json | null
+          id?: string
+          program_id?: string
+          started_at?: string | null
+          total_time_spent?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_program_progress_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       weekly_programs: {
         Row: {
           created_at: string

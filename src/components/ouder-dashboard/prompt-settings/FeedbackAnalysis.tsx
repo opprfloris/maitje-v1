@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -44,10 +43,13 @@ const FeedbackAnalysis: React.FC<FeedbackAnalysisProps> = ({
         throw error;
       }
 
-      // Type assertion to handle the feedback_category type conversion
+      // Proper type casting to handle the feedback_category and thumbs_rating types
       const typedData: QuestionFeedback[] = (data || []).map(item => ({
         ...item,
-        feedback_category: item.feedback_category as 'good' | 'incorrect' | 'unclear' | 'too_easy' | 'too_hard'
+        feedback_category: item.feedback_category as 'good' | 'incorrect' | 'unclear' | 'too_easy' | 'too_hard',
+        thumbs_rating: item.thumbs_rating as -1 | 1 | undefined,
+        difficulty_rating: item.difficulty_rating as 'too_easy' | 'just_right' | 'too_hard' | undefined,
+        clarity_rating: item.clarity_rating as 'clear' | 'somewhat_clear' | 'unclear' | undefined
       }));
 
       setSessionFeedback(typedData);

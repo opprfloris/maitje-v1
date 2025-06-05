@@ -19,7 +19,9 @@ const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
   const [selectedHelper, setSelectedHelper] = useState<Helper | null>(null);
   const [showProgramma, setShowProgramma] = useState(false);
   const [showAIPincode, setShowAIPincode] = useState(false);
+  const [showOuderPincode, setShowOuderPincode] = useState(false);
   const [aiPincode, setAIPincode] = useState('');
+  const [ouderPincode, setOuderPincode] = useState('');
   
   const { currentTip, loading: tipLoading } = useHelperTips(selectedHelper);
   const { items, loading: planLoading } = useDailyPlan('dummy-child-id'); // We'll use a dummy ID for now
@@ -41,6 +43,10 @@ const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
     setShowAIPincode(true);
   };
 
+  const handleOuderAccess = () => {
+    setShowOuderPincode(true);
+  };
+
   const handleAIPincodeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Simple pincode check - in production this should be more secure
@@ -51,6 +57,20 @@ const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
     } else {
       alert('Onjuiste pincode. Probeer 1234.');
       setAIPincode('');
+    }
+  };
+
+  const handleOuderPincodeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Get stored parent pincode or use default
+    const storedPincode = localStorage.getItem('ouderPincode') || '1234';
+    if (ouderPincode === storedPincode) {
+      setShowOuderPincode(false);
+      setOuderPincode('');
+      onNavigate('ouder');
+    } else {
+      alert(`Onjuiste pincode. Probeer ${storedPincode}.`);
+      setOuderPincode('');
     }
   };
 
@@ -248,7 +268,7 @@ const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
       {/* Toegang knoppen */}
       <div className="flex justify-center gap-8">
         <button
-          onClick={() => onNavigate('ouder')}
+          onClick={handleOuderAccess}
           className="flex items-center gap-2 p-3 text-gray-500 hover:text-gray-700 transition-colors"
         >
           <User className="w-5 h-5" />
@@ -307,6 +327,52 @@ const KindDashboard = ({ onNavigate, onSignOut }: Props) => {
             </form>
             <p className="text-xs text-gray-500 mt-4 text-center">
               Tip: Probeer 1234 voor demo toegang
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Ouder Pincode Modal */}
+      {showOuderPincode && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-xl shadow-xl max-w-md w-full mx-4">
+            <h3 className="text-xl font-nunito font-bold text-gray-800 mb-4">
+              Ouder Dashboard Toegang
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Voer de pincode in voor toegang tot het ouder dashboard.
+            </p>
+            <form onSubmit={handleOuderPincodeSubmit}>
+              <input
+                type="password"
+                value={ouderPincode}
+                onChange={(e) => setOuderPincode(e.target.value)}
+                placeholder="Voer pincode in"
+                className="w-full p-3 border border-gray-300 rounded-lg mb-4 text-center text-xl tracking-widest"
+                maxLength={4}
+                autoFocus
+              />
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowOuderPincode(false);
+                    setOuderPincode('');
+                  }}
+                  className="flex-1 p-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                >
+                  Annuleren
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 p-3 bg-maitje-blue text-white rounded-lg hover:bg-maitje-blue/90"
+                >
+                  Toegang
+                </button>
+              </div>
+            </form>
+            <p className="text-xs text-gray-500 mt-4 text-center">
+              Tip: De standaard pincode is 1234
             </p>
           </div>
         </div>

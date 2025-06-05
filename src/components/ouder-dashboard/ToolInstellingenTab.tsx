@@ -8,8 +8,9 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Shield, Bell, Eye, FileText, HelpCircle, Mail, Bug, Download, Trash2, Settings } from 'lucide-react';
+import { Shield, Bell, Eye, FileText, HelpCircle, Mail, Bug, Download, Trash2, Settings, Lock } from 'lucide-react';
 import PrivacyDialog from './PrivacyDialog';
 import FAQDialog from './FAQDialog';
 
@@ -25,6 +26,7 @@ const ToolInstellingenTab = () => {
     content_filter: 'medium',
     language: 'nl'
   });
+  const [ouderPincode, setOuderPincode] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
   const [showFAQDialog, setShowFAQDialog] = useState(false);
@@ -33,6 +35,7 @@ const ToolInstellingenTab = () => {
     if (user) {
       loadPrivacySettings();
       loadAISettings();
+      loadOuderPincode();
     }
   }, [user]);
 
@@ -90,6 +93,11 @@ const ToolInstellingenTab = () => {
     }
   };
 
+  const loadOuderPincode = () => {
+    const storedPincode = localStorage.getItem('ouderPincode') || '1234';
+    setOuderPincode(storedPincode);
+  };
+
   const saveAllSettings = async () => {
     if (!user) return;
 
@@ -125,6 +133,9 @@ const ToolInstellingenTab = () => {
         toast.error('Fout bij opslaan AI instellingen');
         return;
       }
+
+      // Save pincode to localStorage
+      localStorage.setItem('ouderPincode', ouderPincode);
 
       toast.success('Alle instellingen opgeslagen');
     } catch (error) {
@@ -173,7 +184,7 @@ const ToolInstellingenTab = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-nunito font-bold text-gray-800">Tool Instellingen</h2>
-          <p className="text-gray-600">Beheer privacy, notificaties en data verzameling instellingen</p>
+          <p className="text-gray-600">Beheer privacy, notificaties, AI en toegangsinstellingen</p>
         </div>
       </div>
 
@@ -307,6 +318,37 @@ const ToolInstellingenTab = () => {
                   <SelectItem value="fr">Français</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Toegang & Beveiliging */}
+      <Card className="bg-white">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Lock className="w-5 h-5 text-maitje-blue" />
+            Toegang & Beveiliging
+          </CardTitle>
+          <CardDescription>
+            Beheer toegangscodes en beveiligingsinstellingen.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-base">Ouder Dashboard Pincode</Label>
+              <p className="text-sm text-muted-foreground">
+                Wijzig de pincode voor toegang tot het ouder dashboard (4 cijfers)
+              </p>
+              <Input
+                type="password"
+                value={ouderPincode}
+                onChange={(e) => setOuderPincode(e.target.value.slice(0, 4))}
+                placeholder="Voer nieuwe pincode in"
+                maxLength={4}
+                className="max-w-xs text-center tracking-widest"
+              />
             </div>
           </div>
         </CardContent>

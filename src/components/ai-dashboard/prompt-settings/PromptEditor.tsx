@@ -64,7 +64,7 @@ const PromptEditor = ({ activePrompt, onCreateNewVersion, onReloadVersions }: Pr
               <Badge variant="default">{activePrompt.version_name}</Badge>
             </CardTitle>
             <CardDescription>
-              {activePrompt.description || 'Geen beschrijving beschikbaar'}
+              Geactiveerd op: {new Date(activePrompt.created_at).toLocaleDateString('nl-NL')}
             </CardDescription>
           </CardHeader>
         </Card>

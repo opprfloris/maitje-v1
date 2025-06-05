@@ -45,24 +45,24 @@ const DevDashboard = ({ onBack }: DevDashboardProps) => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8">
-            <TabsTrigger value="prompt-settings" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-5 mb-8 bg-white shadow-sm">
+            <TabsTrigger value="prompt-settings" className="flex items-center gap-2 text-sm">
               <FileText className="w-4 h-4" />
               Prompt Instellingen
             </TabsTrigger>
-            <TabsTrigger value="model-config" className="flex items-center gap-2">
+            <TabsTrigger value="model-config" className="flex items-center gap-2 text-sm">
               <Settings className="w-4 h-4" />
               AI Model Config
             </TabsTrigger>
-            <TabsTrigger value="document-library" className="flex items-center gap-2">
+            <TabsTrigger value="document-library" className="flex items-center gap-2 text-sm">
               <Database className="w-4 h-4" />
               Document Library
             </TabsTrigger>
-            <TabsTrigger value="database-inzicht" className="flex items-center gap-2">
+            <TabsTrigger value="database-inzicht" className="flex items-center gap-2 text-sm">
               <Database className="w-4 h-4" />
               Database Inzicht
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <TabsTrigger value="analytics" className="flex items-center gap-2 text-sm">
               <TrendingUp className="w-4 h-4" />
               AI Analytics
             </TabsTrigger>

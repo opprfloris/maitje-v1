@@ -1,365 +1,193 @@
 
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { Upload, FileText, Search, Download, Trash2, Eye, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { AIDocument } from '@/types/database';
 import { toast } from 'sonner';
-import { Upload, FileText, Search, Tag, Trash2, Download } from 'lucide-react';
 
 const DocumentLibraryTab = () => {
-  const { user } = useAuth();
-  const [documents, setDocuments] = useState<AIDocument[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState('all');
+  const [uploading, setUploading] = useState(false);
 
-  // Upload form state
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
-  const [documentName, setDocumentName] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('algemeen');
-  const [tags, setTags] = useState('');
-
-  useEffect(() => {
-    if (user) {
-      loadDocuments();
+  // Mock documents data
+  const [documents] = useState([
+    {
+      id: '1',
+      name: 'Nederlandse Curriculum Richtlijnen.pdf',
+      type: 'curriculum',
+      size: '2.4 MB',
+      uploadDate: '2024-01-15',
+      status: 'active'
+    },
+    {
+      id: '2',
+      name: 'Rekenen Methode Groep 5.pdf',
+      type: 'methode',
+      size: '5.1 MB',
+      uploadDate: '2024-01-12',
+      status: 'active'
+    },
+    {
+      id: '3',
+      name: 'Begrijpend Lezen Voorbeelden.docx',
+      type: 'voorbeelden',
+      size: '1.8 MB',
+      uploadDate: '2024-01-10',
+      status: 'draft'
     }
-  }, [user]);
-
-  const loadDocuments = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('ai_documents')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error loading documents:', error);
-        toast.error('Fout bij laden documenten');
-        return;
-      }
-
-      setDocuments(data || []);
-    } catch (error) {
-      console.error('Error loading documents:', error);
-      toast.error('Fout bij laden documenten');
-    } finally {
-      setLoading(false);
-    }
-  };
+  ]);
 
   const handleFileUpload = async () => {
-    if (!uploadFile || !documentName || !user) {
-      toast.error('Vul alle verplichte velden in');
-      return;
-    }
-
     setUploading(true);
     try {
-      // For now, we'll just store the document metadata
-      // In a real implementation, you'd upload the file to Supabase Storage
-      const fileType = uploadFile.type || uploadFile.name.split('.').pop() || 'unknown';
-      const filePath = `documents/${user.id}/${Date.now()}_${uploadFile.name}`;
-
-      const { error } = await supabase
-        .from('ai_documents')
-        .insert({
-          user_id: user.id,
-          document_name: documentName,
-          document_type: fileType,
-          file_path: filePath,
-          subject_category: category,
-          description: description,
-          tags: tags ? tags.split(',').map(tag => tag.trim()) : []
-        });
-
-      if (error) {
-        console.error('Error uploading document:', error);
-        toast.error('Fout bij uploaden document');
-        return;
-      }
-
+      // Simulate file upload
+      await new Promise(resolve => setTimeout(resolve, 2000));
       toast.success('Document succesvol geüpload');
-      
-      // Reset form
-      setUploadFile(null);
-      setDocumentName('');
-      setDescription('');
-      setCategory('algemeen');
-      setTags('');
-      
-      // Reload documents
-      await loadDocuments();
     } catch (error) {
-      console.error('Error uploading document:', error);
       toast.error('Fout bij uploaden document');
     } finally {
       setUploading(false);
     }
   };
 
-  const deleteDocument = async (documentId: string) => {
-    if (!confirm('Weet je zeker dat je dit document wilt verwijderen?')) return;
-
-    try {
-      const { error } = await supabase
-        .from('ai_documents')
-        .delete()
-        .eq('id', documentId);
-
-      if (error) {
-        console.error('Error deleting document:', error);
-        toast.error('Fout bij verwijderen document');
-        return;
-      }
-
-      toast.success('Document verwijderd');
-      await loadDocuments();
-    } catch (error) {
-      console.error('Error deleting document:', error);
-      toast.error('Fout bij verwijderen document');
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'curriculum': return 'bg-blue-100 text-blue-800';
+      case 'methode': return 'bg-green-100 text-green-800';
+      case 'voorbeelden': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const filteredDocuments = documents.filter(doc => {
-    const matchesSearch = doc.document_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (doc.description && doc.description.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesCategory = filterCategory === 'all' || doc.subject_category === filterCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const getStatusColor = (status: string) => {
+    return status === 'active' 
+      ? 'bg-green-100 text-green-800' 
+      : 'bg-yellow-100 text-yellow-800';
+  };
 
-  const categories = [
-    { value: 'algemeen', label: 'Algemeen' },
-    { value: 'rekenen', label: 'Rekenen' },
-    { value: 'taal', label: 'Taal' },
-    { value: 'engels', label: 'Engels' }
-  ];
-
-  if (loading) {
-    return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="w-8 h-8 border-2 border-maitje-blue border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-600">Documenten laden...</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const filteredDocuments = documents.filter(doc =>
+    doc.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
-      {/* Upload Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Upload className="w-5 h-5 text-maitje-blue" />
-            Document Uploaden
-          </CardTitle>
-          <CardDescription>
-            Upload PDF's, Word documenten of tekstbestanden als inspiratie voor AI prompt generation.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="file-upload">Bestand *</Label>
-              <Input
-                id="file-upload"
-                type="file"
-                accept=".pdf,.doc,.docx,.txt,.md"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  setUploadFile(file || null);
-                  if (file && !documentName) {
-                    setDocumentName(file.name.replace(/\.[^/.]+$/, ""));
-                  }
-                }}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="document-name">Document Naam *</Label>
-              <Input
-                id="document-name"
-                value={documentName}
-                onChange={(e) => setDocumentName(e.target.value)}
-                placeholder="Bijv. Rekenen Groep 5 Werkbladen"
-              />
-            </div>
+      <div className="maitje-card">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 bg-maitje-green rounded-xl flex items-center justify-center">
+            <FileText className="w-6 h-6 text-white" />
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="category">Categorie</Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.value} value={cat.value}>
-                      {cat.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="tags">Tags (komma gescheiden)</Label>
-              <Input
-                id="tags"
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
-                placeholder="tafels, groep5, moeilijk"
-              />
-            </div>
+          <div>
+            <h2 className="text-2xl font-nunito font-bold text-gray-800">Document Library</h2>
+            <p className="text-gray-600">Beheer documenten die gebruikt worden voor AI context</p>
           </div>
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Beschrijving</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Korte beschrijving van wat dit document bevat en hoe het gebruikt kan worden..."
-              rows={3}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              placeholder="Zoek documenten..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
             />
           </div>
-
           <Button 
             onClick={handleFileUpload}
-            disabled={uploading || !uploadFile || !documentName}
-            className="w-full"
+            disabled={uploading}
+            className="maitje-button flex items-center gap-2"
           >
             {uploading ? (
               <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                Uploaden...
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Uploading...
               </>
             ) : (
               <>
-                <Upload className="w-4 h-4 mr-2" />
-                Document Uploaden
+                <Plus className="w-4 h-4" />
+                Document Toevoegen
               </>
             )}
           </Button>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Documents Library */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5 text-maitje-blue" />
-            Document Library ({filteredDocuments.length})
-          </CardTitle>
-          <CardDescription>
-            Beheer je geüploade documenten die gebruikt worden voor AI inspiratie.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Search and Filter */}
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input
-                  placeholder="Zoek documenten..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+        <div className="space-y-3">
+          {filteredDocuments.map((doc) => (
+            <div key={doc.id} className="bg-gray-50 p-4 rounded-xl border border-gray-200 hover:bg-gray-100 transition-colors">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center border border-gray-200">
+                    <FileText className="w-5 h-5 text-gray-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-800">{doc.name}</h4>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge className={getTypeColor(doc.type)}>
+                        {doc.type}
+                      </Badge>
+                      <Badge className={getStatusColor(doc.status)}>
+                        {doc.status === 'active' ? 'Actief' : 'Concept'}
+                      </Badge>
+                      <span className="text-xs text-gray-500">{doc.size}</span>
+                      <span className="text-xs text-gray-500">•</span>
+                      <span className="text-xs text-gray-500">{doc.uploadDate}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="sm">
+                    <Eye className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    <Download className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-800">
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </div>
-            <Select value={filterCategory} onValueChange={setFilterCategory}>
-              <SelectTrigger className="w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Alle categorieën</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.value} value={cat.value}>
-                    {cat.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          ))}
+        </div>
+
+        {filteredDocuments.length === 0 && (
+          <div className="text-center py-12">
+            <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600">Geen documenten gevonden</p>
+            <p className="text-sm text-gray-500">Upload documenten om te beginnen</p>
           </div>
+        )}
+      </div>
 
-          {/* Documents List */}
-          {filteredDocuments.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p>Geen documenten gevonden</p>
-              <p className="text-sm">Upload je eerste document om te beginnen</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredDocuments.map((doc) => (
-                <Card key={doc.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-medium text-gray-900 truncate flex-1">
-                        {doc.document_name}
-                      </h3>
-                      <div className="flex gap-1 ml-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteDocument(doc.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge variant="secondary">{doc.subject_category}</Badge>
-                      <Badge variant="outline">{doc.document_type}</Badge>
-                    </div>
-
-                    {doc.description && (
-                      <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-                        {doc.description}
-                      </p>
-                    )}
-
-                    {doc.tags && doc.tags.length > 0 && (
-                      <div className="flex items-center gap-1 mb-2">
-                        <Tag className="w-3 h-3 text-gray-400" />
-                        <div className="flex flex-wrap gap-1">
-                          {doc.tags.map((tag, index) => (
-                            <span key={index} className="text-xs bg-gray-100 px-2 py-1 rounded">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="text-xs text-gray-500">
-                      Geüpload: {new Date(doc.created_at).toLocaleDateString('nl-NL')}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <div className="maitje-card">
+        <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <Upload className="w-5 h-5 text-maitje-blue" />
+          Ondersteunde Bestandstypen
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="text-2xl mb-2">📄</div>
+            <p className="text-sm font-semibold text-blue-800">PDF</p>
+            <p className="text-xs text-blue-600">Lesmateriaal</p>
+          </div>
+          <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
+            <div className="text-2xl mb-2">📝</div>
+            <p className="text-sm font-semibold text-green-800">DOCX</p>
+            <p className="text-xs text-green-600">Documenten</p>
+          </div>
+          <div className="text-center p-3 bg-purple-50 rounded-lg border border-purple-200">
+            <div className="text-2xl mb-2">📊</div>
+            <p className="text-sm font-semibold text-purple-800">XLSX</p>
+            <p className="text-xs text-purple-600">Spreadsheets</p>
+          </div>
+          <div className="text-center p-3 bg-orange-50 rounded-lg border border-orange-200">
+            <div className="text-2xl mb-2">📋</div>
+            <p className="text-sm font-semibold text-orange-800">TXT</p>
+            <p className="text-xs text-orange-600">Tekst bestanden</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

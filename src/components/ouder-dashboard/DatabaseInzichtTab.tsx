@@ -1,128 +1,57 @@
 
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TableSelector from './database/TableSelector';
 import DataDisplay from './database/DataDisplay';
 import AIQueriesLog from './database/AIQueriesLog';
-import DatabaseWarning from './database/DatabaseWarning';
-
-type TableName = 'profiles' | 'children' | 'family_connections' | 'exercise_sessions' | 'exercise_results' | 'daily_progress' | 'daily_plans' | 'plan_item_progress' | 'weekly_programs' | 'user_ai_config' | 'user_interests' | 'user_privacy_settings' | 'helpers' | 'specific_tips' | 'generic_tips';
 
 const DatabaseInzichtTab = () => {
-  const { user } = useAuth();
-  const [selectedTable, setSelectedTable] = useState<TableName>('profiles');
-  const [data, setData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [searchFilter, setSearchFilter] = useState('');
-  const [aiQueries, setAiQueries] = useState<any[]>([]);
-
-  useEffect(() => {
-    if (user && selectedTable) {
-      fetchData();
-    }
-  }, [user, selectedTable]);
-
-  useEffect(() => {
-    // Simulate AI queries for demonstration
-    setAiQueries([
-      {
-        id: 1,
-        query: "SELECT * FROM exercise_sessions WHERE child_id = ? AND created_at > ?",
-        timestamp: new Date().toISOString(),
-        executionTime: "45ms",
-        rowsAffected: 23
-      },
-      {
-        id: 2,
-        query: "UPDATE daily_progress SET streak_days = streak_days + 1 WHERE child_id = ?",
-        timestamp: new Date(Date.now() - 300000).toISOString(),
-        executionTime: "12ms",
-        rowsAffected: 1
-      }
-    ]);
-  }, []);
-
-  const fetchData = async () => {
-    setLoading(true);
-    setError('');
-    
-    try {
-      const { data: result, error: fetchError } = await supabase
-        .from(selectedTable)
-        .select('*')
-        .limit(100);
-
-      if (fetchError) {
-        throw fetchError;
-      }
-
-      setData(result || []);
-    } catch (err: any) {
-      setError(err.message || 'Er is een fout opgetreden bij het ophalen van data');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Filter data based on search
-  const filteredData = data.filter(row => {
-    if (!searchFilter) return true;
-    return Object.values(row).some(value => 
-      String(value).toLowerCase().includes(searchFilter.toLowerCase())
-    );
-  });
-
-  const handleExport = () => {
-    // Export filtered data to CSV
-    if (filteredData.length === 0) return;
-    
-    const headers = Object.keys(filteredData[0]);
-    const csvContent = [
-      headers.join(','),
-      ...filteredData.map(row => 
-        headers.map(header => String(row[header] || '')).join(',')
-      )
-    ].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${selectedTable}_export.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
+  const [selectedTable, setSelectedTable] = useState<string>('');
 
   return (
     <div className="space-y-6">
-      <DatabaseWarning />
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1">
-          <TableSelector 
-            selectedTable={selectedTable}
-            onTableChange={setSelectedTable}
-            searchFilter={searchFilter}
-            onSearchChange={setSearchFilter}
-          />
+      <div className="maitje-card">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 bg-maitje-blue rounded-xl flex items-center justify-center">
+            <span className="text-white text-xl">🗄️</span>
+          </div>
+          <div>
+            <h2 className="text-2xl font-nunito font-bold text-gray-800">Database Inzicht</h2>
+            <p className="text-gray-600">Bekijk en analyseer je database gegevens</p>
+          </div>
         </div>
-        
-        <div className="lg:col-span-2">
-          <DataDisplay 
-            selectedTable={selectedTable}
-            tableData={data}
-            filteredData={filteredData}
-            isLoading={loading}
-            searchFilter={searchFilter}
-            onRefresh={fetchData}
-            onExport={handleExport}
-          />
-        </div>
-      </div>
 
-      <AIQueriesLog queries={aiQueries} />
+        <Tabs defaultValue="tables" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 bg-white shadow-sm">
+            <TabsTrigger value="tables" className="flex items-center gap-2">
+              📊 Data Tabellen
+            </TabsTrigger>
+            <TabsTrigger value="queries" className="flex items-center gap-2">
+              🔍 AI Queries Log
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="tables" className="space-y-6">
+            <div className="maitje-card">
+              <TableSelector 
+                onTableSelect={setSelectedTable}
+                selectedTable={selectedTable}
+              />
+            </div>
+            {selectedTable && (
+              <div className="maitje-card">
+                <DataDisplay tableName={selectedTable} />
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="queries" className="space-y-6">
+            <div className="maitje-card">
+              <AIQueriesLog />
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 };

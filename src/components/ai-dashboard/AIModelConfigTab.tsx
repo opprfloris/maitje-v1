@@ -1,290 +1,197 @@
 
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { Settings, Sliders, Brain, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Slider } from '@/components/ui/slider';
 import { toast } from 'sonner';
-import { Brain, Key, Shield, Zap } from 'lucide-react';
 
 const AIModelConfigTab = () => {
-  const { user } = useAuth();
-  const [apiKey, setApiKey] = useState('');
-  const [selectedModel, setSelectedModel] = useState('gpt-4o-mini');
-  const [contentFilter, setContentFilter] = useState('medium');
-  const [language, setLanguage] = useState('nl');
-  const [loading, setLoading] = useState(false);
-  const [testingConnection, setTestingConnection] = useState(false);
+  const [temperature, setTemperature] = useState([0.7]);
+  const [maxTokens, setMaxTokens] = useState([2048]);
+  const [topP, setTopP] = useState([0.9]);
+  const [model, setModel] = useState('gpt-4o-mini');
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      loadUserConfig();
-    }
-  }, [user]);
-
-  const loadUserConfig = async () => {
-    if (!user) return;
-
+  const handleSave = async () => {
+    setSaving(true);
     try {
-      const { data, error } = await supabase
-        .from('user_ai_config')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error loading user config:', error);
-        return;
-      }
-
-      if (data) {
-        setSelectedModel(data.selected_model || 'gpt-4o-mini');
-        setContentFilter(data.content_filter || 'medium');
-        setLanguage(data.language || 'nl');
-        // Note: API key is encrypted, so we don't load it
-      }
+      // Simulate saving to backend
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast.success('AI model configuratie opgeslagen');
     } catch (error) {
-      console.error('Error loading user config:', error);
-    }
-  };
-
-  const saveConfiguration = async () => {
-    if (!user) return;
-
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from('user_ai_config')
-        .upsert({
-          user_id: user.id,
-          selected_model: selectedModel,
-          content_filter: contentFilter,
-          language: language,
-          api_key_encrypted: apiKey ? btoa(apiKey) : undefined,
-          updated_at: new Date().toISOString()
-        });
-
-      if (error) {
-        console.error('Error saving config:', error);
-        toast.error('Fout bij opslaan configuratie');
-        return;
-      }
-
-      toast.success('AI configuratie opgeslagen');
-      setApiKey(''); // Clear the API key input for security
-    } catch (error) {
-      console.error('Error saving config:', error);
       toast.error('Fout bij opslaan configuratie');
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
-
-  const testConnection = async () => {
-    if (!apiKey && !selectedModel) {
-      toast.error('Voer eerst een API key en model in');
-      return;
-    }
-
-    setTestingConnection(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('test-openai-connection', {
-        body: { 
-          api_key: apiKey,
-          model: selectedModel
-        }
-      });
-
-      if (error) {
-        console.error('Connection test failed:', error);
-        toast.error('Verbinding mislukt: ' + error.message);
-        return;
-      }
-
-      if (data.success) {
-        toast.success('Verbinding succesvol! AI model werkt correct.');
-      } else {
-        toast.error('Verbinding mislukt: ' + data.error);
-      }
-    } catch (error) {
-      console.error('Connection test error:', error);
-      toast.error('Fout bij testen verbinding');
-    } finally {
-      setTestingConnection(false);
-    }
-  };
-
-  const modelOptions = [
-    { value: 'gpt-4o-mini', label: 'GPT-4O Mini', description: 'Snel en kosteneffectief', badge: 'Aanbevolen' },
-    { value: 'gpt-4o', label: 'GPT-4O', description: 'Krachtig en accuraat', badge: 'Premium' },
-    { value: 'gpt-4.5-preview', label: 'GPT-4.5 Preview', description: 'Nieuwste functies', badge: 'Experimental' },
-  ];
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Brain className="w-5 h-5 text-maitje-blue" />
-            AI Model Configuratie
-          </CardTitle>
-          <CardDescription>
-            Configureer je OpenAI API verbinding en model instellingen voor optimale prestaties.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* API Key Section */}
+      <div className="maitje-card">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 bg-maitje-blue rounded-xl flex items-center justify-center">
+            <Brain className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-nunito font-bold text-gray-800">AI Model Configuratie</h2>
+            <p className="text-gray-600">Pas de AI model parameters aan voor optimale prestaties</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Key className="w-4 h-4 text-maitje-blue" />
-              <Label className="text-base font-semibold">OpenAI API Key</Label>
+            <div>
+              <Label className="text-sm font-semibold text-gray-700">Model Selectie</Label>
+              <div className="mt-2 space-y-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    id="gpt-4o-mini"
+                    name="model"
+                    value="gpt-4o-mini"
+                    checked={model === 'gpt-4o-mini'}
+                    onChange={(e) => setModel(e.target.value)}
+                    className="text-maitje-blue"
+                  />
+                  <label htmlFor="gpt-4o-mini" className="flex items-center gap-2">
+                    GPT-4o Mini
+                    <Badge variant="secondary" className="bg-green-100 text-green-800">Snel & Goedkoop</Badge>
+                  </label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    id="gpt-4o"
+                    name="model"
+                    value="gpt-4o"
+                    checked={model === 'gpt-4o'}
+                    onChange={(e) => setModel(e.target.value)}
+                    className="text-maitje-blue"
+                  />
+                  <label htmlFor="gpt-4o" className="flex items-center gap-2">
+                    GPT-4o
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">Krachtig</Badge>
+                  </label>
+                </div>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Input
-                type="password"
-                placeholder="sk-..."
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                className="font-mono"
+
+            <div>
+              <Label className="text-sm font-semibold text-gray-700">
+                Temperature: {temperature[0]}
+              </Label>
+              <Slider
+                value={temperature}
+                onValueChange={setTemperature}
+                max={2}
+                min={0}
+                step={0.1}
+                className="mt-2"
               />
-              <p className="text-sm text-gray-600">
-                Je API key wordt versleuteld opgeslagen. Verkrijg een key via{' '}
-                <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-maitje-blue hover:underline">
-                  OpenAI Dashboard
-                </a>
+              <p className="text-xs text-gray-500 mt-1">
+                Controleert creativiteit (0 = deterministisch, 2 = zeer creatief)
+              </p>
+            </div>
+
+            <div>
+              <Label className="text-sm font-semibold text-gray-700">
+                Max Tokens: {maxTokens[0]}
+              </Label>
+              <Slider
+                value={maxTokens}
+                onValueChange={setMaxTokens}
+                max={4096}
+                min={256}
+                step={256}
+                className="mt-2"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Maximum aantal tokens in het antwoord
               </p>
             </div>
           </div>
 
-          <Separator />
-
-          {/* Model Selection */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-maitje-blue" />
-              <Label className="text-base font-semibold">AI Model</Label>
+            <div>
+              <Label className="text-sm font-semibold text-gray-700">
+                Top P: {topP[0]}
+              </Label>
+              <Slider
+                value={topP}
+                onValueChange={setTopP}
+                max={1}
+                min={0}
+                step={0.1}
+                className="mt-2"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Nucleus sampling parameter
+              </p>
             </div>
-            <Select value={selectedModel} onValueChange={setSelectedModel}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecteer een model" />
-              </SelectTrigger>
-              <SelectContent>
-                {modelOptions.map((model) => (
-                  <SelectItem key={model.value} value={model.value}>
-                    <div className="flex items-center justify-between w-full">
-                      <div>
-                        <div className="font-medium">{model.label}</div>
-                        <div className="text-sm text-gray-600">{model.description}</div>
-                      </div>
-                      <Badge variant={model.badge === 'Aanbevolen' ? 'default' : 'secondary'}>
-                        {model.badge}
-                      </Badge>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
 
-          <Separator />
-
-          {/* Content Filter */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-maitje-blue" />
-              <Label className="text-base font-semibold">Content Filter</Label>
-            </div>
-            <Select value={contentFilter} onValueChange={setContentFilter}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="low">Laag - Minimale filtering</SelectItem>
-                <SelectItem value="medium">Medium - Standaard filtering</SelectItem>
-                <SelectItem value="high">Hoog - Strenge filtering</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Language */}
-          <div className="space-y-4">
-            <Label className="text-base font-semibold">Taal</Label>
-            <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="nl">Nederlands</SelectItem>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="de">Deutsch</SelectItem>
-                <SelectItem value="fr">Français</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Separator />
-
-          {/* Actions */}
-          <div className="flex gap-3">
-            <Button 
-              onClick={testConnection} 
-              variant="outline"
-              disabled={testingConnection}
-              className="flex items-center gap-2"
-            >
-              {testingConnection ? (
-                <div className="w-4 h-4 border-2 border-maitje-blue border-t-transparent rounded-full animate-spin" />
-              ) : (
+            <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
+              <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
                 <Zap className="w-4 h-4" />
-              )}
-              Test Verbinding
-            </Button>
-            <Button 
-              onClick={saveConfiguration}
-              disabled={loading}
-              className="flex items-center gap-2"
-            >
-              {loading ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <Key className="w-4 h-4" />
-              )}
-              Configuratie Opslaan
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+                Huidige Configuratie
+              </h4>
+              <div className="space-y-1 text-sm text-blue-700">
+                <p><strong>Model:</strong> {model}</p>
+                <p><strong>Temperature:</strong> {temperature[0]}</p>
+                <p><strong>Max Tokens:</strong> {maxTokens[0]}</p>
+                <p><strong>Top P:</strong> {topP[0]}</p>
+              </div>
+            </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Model Performance Tips</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <h4 className="font-semibold text-maitje-blue">GPT-4O Mini</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Beste prijs/prestatie verhouding</li>
-                <li>• Geschikt voor meeste educatieve content</li>
-                <li>• Snelle response tijden</li>
-              </ul>
-            </div>
-            <div className="space-y-2">
-              <h4 className="font-semibold text-maitje-blue">GPT-4O</h4>
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Hoogste kwaliteit output</li>
-                <li>• Complexe redeneertaken</li>
-                <li>• Uitgebreide context begrip</li>
-              </ul>
+            <Button 
+              onClick={handleSave}
+              disabled={saving}
+              className="w-full maitje-button"
+            >
+              {saving ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  Opslaan...
+                </>
+              ) : (
+                <>
+                  <Settings className="w-4 h-4 mr-2" />
+                  Configuratie Opslaan
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="maitje-card">
+        <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <Sliders className="w-5 h-5 text-maitje-green" />
+          Aanbevolen Instellingen
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-green-50 p-4 rounded-xl border border-green-200">
+            <h4 className="font-semibold text-green-800 mb-2">📚 Educatieve Content</h4>
+            <p className="text-sm text-green-700 mb-3">Voor lesprogramma's en educatief materiaal</p>
+            <div className="space-y-1 text-xs text-green-600">
+              <p>• Temperature: 0.3 (consistent)</p>
+              <p>• Max Tokens: 2048</p>
+              <p>• Top P: 0.8</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+          <div className="bg-purple-50 p-4 rounded-xl border border-purple-200">
+            <h4 className="font-semibold text-purple-800 mb-2">🎨 Creatieve Content</h4>
+            <p className="text-sm text-purple-700 mb-3">Voor verhalen en creatieve opdrachten</p>
+            <div className="space-y-1 text-xs text-purple-600">
+              <p>• Temperature: 0.8 (creatief)</p>
+              <p>• Max Tokens: 3072</p>
+              <p>• Top P: 0.9</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

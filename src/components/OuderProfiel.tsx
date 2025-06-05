@@ -13,7 +13,7 @@ interface OuderProfielProps {
 }
 
 const OuderProfiel = ({ onBack }: OuderProfielProps) => {
-  const [activeTab, setActiveTab] = useState('statistieken');
+  const [activeTab, setActiveTab] = useState('kind-instellingen');
 
   return (
     <div className="min-h-screen bg-maitje-cream">
@@ -42,17 +42,17 @@ const OuderProfiel = ({ onBack }: OuderProfielProps) => {
       <div className="container mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-8">
-            <TabsTrigger value="statistieken" className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4" />
-              Statistieken
+            <TabsTrigger value="kind-instellingen" className="flex items-center gap-2">
+              <User className="w-4 h-4" />
+              Kind Instellingen
             </TabsTrigger>
             <TabsTrigger value="lesprogramma" className="flex items-center gap-2">
               <BookOpen className="w-4 h-4" />
               Lesprogramma
             </TabsTrigger>
-            <TabsTrigger value="kind-instellingen" className="flex items-center gap-2">
-              <User className="w-4 h-4" />
-              Kind Instellingen
+            <TabsTrigger value="statistieken" className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4" />
+              Statistieken
             </TabsTrigger>
             <TabsTrigger value="tool-instellingen" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
@@ -60,16 +60,16 @@ const OuderProfiel = ({ onBack }: OuderProfielProps) => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="statistieken">
-            <StatistiekenTab />
+          <TabsContent value="kind-instellingen">
+            <KindInstellingenTab />
           </TabsContent>
 
           <TabsContent value="lesprogramma">
             <LesprogrammaTab />
           </TabsContent>
 
-          <TabsContent value="kind-instellingen">
-            <KindInstellingenTab />
+          <TabsContent value="statistieken">
+            <StatistiekenTab />
           </TabsContent>
 
           <TabsContent value="tool-instellingen">

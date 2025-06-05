@@ -1,37 +1,74 @@
 
 import React from 'react';
-import { Check, Edit, RefreshCw, Eye, Clock, Palette } from 'lucide-react';
+import { Check, Edit, RefreshCw, Eye, Clock, Palette, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { getWeekDateRange } from '@/utils/weekUtils';
 
 interface WeekProgramDisplayProps {
   currentWeekData: any;
   selectedWeek: number;
+  selectedYear: number;
   isCurrentOrFutureWeek: boolean;
   onPublishProgram: () => void;
   onReplaceProgram: () => void;
+  onDeleteProgram: () => void;
   onDayClick: (dayData: any) => void;
 }
 
 const WeekProgramDisplay: React.FC<WeekProgramDisplayProps> = ({
   currentWeekData,
   selectedWeek,
+  selectedYear,
   isCurrentOrFutureWeek,
   onPublishProgram,
   onReplaceProgram,
+  onDeleteProgram,
   onDayClick
 }) => {
+  const weekDateRange = getWeekDateRange(selectedYear, selectedWeek);
+
   return (
     <div className="maitje-card">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-xl font-nunito font-bold text-gray-800">Week {selectedWeek} Programma</h3>
-          {currentWeekData?.theme && (
-            <div className="flex items-center gap-2 mt-1">
-              <Palette className="w-4 h-4 text-purple-600" />
-              <span className="text-sm font-medium text-purple-600">{currentWeekData.theme}</span>
+          <h3 className="text-xl font-nunito font-bold text-gray-800">
+            Week {selectedWeek} Programma ({weekDateRange.startString} - {weekDateRange.endString})
+          </h3>
+          {currentWeekData && (
+            <div className="mt-2">
+              <div className="flex items-center gap-4">
+                {/* Status Badge */}
+                <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                  currentWeekData.status === 'published' 
+                    ? 'bg-green-100 text-green-800'
+                    : currentWeekData.status === 'draft'
+                    ? 'bg-yellow-100 text-yellow-800'
+                    : 'bg-gray-100 text-gray-800'
+                }`}>
+                  <div className={`w-2 h-2 rounded-full mr-2 ${
+                    currentWeekData.status === 'published' 
+                      ? 'bg-green-500'
+                      : currentWeekData.status === 'draft'
+                      ? 'bg-yellow-500'
+                      : 'bg-gray-500'
+                  }`} />
+                  {currentWeekData.status === 'published' ? 'Gepubliceerd' :
+                   currentWeekData.status === 'draft' ? 'Concept' : 'Leeg'}
+                </div>
+                
+                {/* Theme Badge */}
+                {currentWeekData.theme && (
+                  <div className="flex items-center gap-2">
+                    <Palette className="w-4 h-4 text-purple-600" />
+                    <span className="text-sm font-medium text-purple-600">{currentWeekData.theme}</span>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
+        
+        {/* Action Buttons */}
         <div className="flex gap-2">
           {currentWeekData?.status === 'draft' && (
             <Button onClick={onPublishProgram} size="sm">
@@ -47,6 +84,17 @@ const WeekProgramDisplay: React.FC<WeekProgramDisplayProps> = ({
             >
               <RefreshCw className="w-4 h-4 mr-2" />
               Vervang Programma
+            </Button>
+          )}
+          {currentWeekData && (
+            <Button 
+              onClick={onDeleteProgram}
+              variant="outline"
+              size="sm"
+              className="text-red-600 border-red-200 hover:bg-red-50"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Verwijder
             </Button>
           )}
         </div>
@@ -115,18 +163,7 @@ const WeekProgramDisplay: React.FC<WeekProgramDisplayProps> = ({
 
       {currentWeekData && (
         <div className="mt-6 bg-blue-50 p-4 rounded-lg">
-          <p className="text-blue-800">
-            <strong>Status:</strong> {
-              currentWeekData.status === 'published' ? 'Gepubliceerd' :
-              currentWeekData.status === 'draft' ? 'Concept - kan nog bewerkt worden' : 'Concept'
-            }
-          </p>
-          {currentWeekData.theme && (
-            <p className="text-blue-600 text-sm mt-1">
-              <strong>Thema:</strong> {currentWeekData.theme}
-            </p>
-          )}
-          <p className="text-blue-600 text-sm mt-1">
+          <p className="text-blue-600 text-sm">
             Klik op een dag om alle AI-gegenereerde vragen en oefeningen te bekijken.
           </p>
         </div>

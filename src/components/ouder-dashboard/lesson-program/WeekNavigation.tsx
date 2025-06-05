@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getWeekDateRange } from '@/utils/weekUtils';
 
 interface WeekNavigationProps {
   selectedWeek: number;
@@ -51,6 +52,8 @@ const WeekNavigation: React.FC<WeekNavigationProps> = ({
       day: 'numeric' 
     });
   };
+
+  const selectedWeekDateRange = getWeekDateRange(selectedYear, selectedWeek);
 
   return (
     <div className="maitje-card">
@@ -123,7 +126,12 @@ const WeekNavigation: React.FC<WeekNavigationProps> = ({
         </button>
         
         <div className="text-center">
-          <h4 className="text-lg font-bold text-gray-800">Week {selectedWeek} - {selectedYear}</h4>
+          <h4 className="text-lg font-bold text-gray-800">
+            Week {selectedWeek} - {selectedYear}
+          </h4>
+          <p className="text-sm text-gray-600">
+            {selectedWeekDateRange.startString} - {selectedWeekDateRange.endString}
+          </p>
         </div>
         
         <button

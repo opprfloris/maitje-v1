@@ -1,9 +1,13 @@
 
 import React, { useState } from 'react';
-import { Wand2, Settings, Clock, Brain, Palette, Trash2 } from 'lucide-react';
+import { Wand2, Settings, Sparkles, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import SubjectSelector from './SubjectSelector';
 import { GenerationSettings } from '@/hooks/useProgramGenerator';
-import SubjectSelector, { SubjectData } from './SubjectSelector';
 
 interface ProgramGeneratorBoxProps {
   kindGroep: number;
@@ -24,14 +28,12 @@ const ProgramGeneratorBox: React.FC<ProgramGeneratorBoxProps> = ({
   onGenerateProgram,
   isGenerating,
   onDeleteProgram,
-  showDeleteButton = false
+  showDeleteButton
 }) => {
   const [timePerDay, setTimePerDay] = useState(30);
-  const [subjects, setSubjects] = useState<{
-    rekenen: SubjectData;
-    taal: SubjectData;
-    engels: SubjectData;
-  }>({
+  const [useAIPersonalization, setUseAIPersonalization] = useState(true);
+  const [theme, setTheme] = useState('');
+  const [subjects, setSubjects] = useState({
     rekenen: { 
       enabled: true, 
       subtopics: ['Tafels', 'Verhalen Rekenen', 'Hoofdrekenen'] 
@@ -45,30 +47,6 @@ const ProgramGeneratorBox: React.FC<ProgramGeneratorBoxProps> = ({
       subtopics: ['Woordenschat', 'Conversatie'] 
     }
   });
-  const [useAIPersonalization, setUseAIPersonalization] = useState(true);
-  const [theme, setTheme] = useState('');
-
-  const handleSubjectToggle = (subject: string) => {
-    setSubjects(prev => ({
-      ...prev,
-      [subject]: {
-        ...prev[subject as keyof typeof prev],
-        enabled: !prev[subject as keyof typeof prev].enabled
-      }
-    }));
-  };
-
-  const handleSubtopicToggle = (subject: string, subtopic: string) => {
-    setSubjects(prev => ({
-      ...prev,
-      [subject]: {
-        ...prev[subject as keyof typeof prev],
-        subtopics: prev[subject as keyof typeof prev].subtopics.includes(subtopic)
-          ? prev[subject as keyof typeof prev].subtopics.filter(t => t !== subtopic)
-          : [...prev[subject as keyof typeof prev].subtopics, subtopic]
-      }
-    }));
-  };
 
   const handleGenerate = () => {
     const settings: GenerationSettings = {
@@ -80,168 +58,140 @@ const ProgramGeneratorBox: React.FC<ProgramGeneratorBoxProps> = ({
     onGenerateProgram(settings);
   };
 
-  const getGroepNaam = (groep: number) => {
-    return `Groep ${groep}`;
-  };
-
   return (
     <div className="maitje-card">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Wand2 className="w-6 h-6 text-maitje-blue" />
-          <div>
-            <h3 className="text-xl font-nunito font-bold text-gray-800">AI Weekprogramma Generator</h3>
-            <p className="text-sm text-gray-600">Genereer een gepersonaliseerd weekprogramma voor je kind</p>
-          </div>
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-12 h-12 bg-maitje-blue rounded-xl flex items-center justify-center">
+          <Wand2 className="w-6 h-6 text-white" />
         </div>
-        {showDeleteButton && (
-          <Button
-            onClick={onDeleteProgram}
-            variant="outline"
-            size="sm"
-            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-          >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Verwijder Programma
-          </Button>
-        )}
+        <div>
+          <h3 className="text-xl font-nunito font-bold text-gray-800">AI Programma Generator</h3>
+          <p className="text-gray-600">Laat AI een gepersonaliseerd weekprogramma maken</p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Basis Instellingen */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Settings className="w-5 h-5 text-maitje-blue" />
-            <h4 className="font-semibold text-gray-800">Basis Instellingen</h4>
-          </div>
+        <div className="space-y-4">
+          <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+            <Settings className="w-4 h-4" />
+            Basis Instellingen
+          </h4>
           
-          {/* Groep Selector */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Groep
-            </label>
-            <select
-              value={kindGroep}
-              onChange={(e) => onKindGroepChange(Number(e.target.value))}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maitje-blue focus:border-transparent font-medium"
-            >
-              {[1, 2, 3, 4, 5, 6, 7, 8].map(groep => (
-                <option key={groep} value={groep}>
-                  {getGroepNaam(groep)}
-                </option>
-              ))}
-            </select>
-          </div>
+          <div className="space-y-3">
+            <div>
+              <Label className="text-sm font-medium">Kind Groep</Label>
+              <Select value={kindGroep.toString()} onValueChange={(value) => onKindGroepChange(parseInt(value))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="3">Groep 3</SelectItem>
+                  <SelectItem value="4">Groep 4</SelectItem>
+                  <SelectItem value="5">Groep 5</SelectItem>
+                  <SelectItem value="6">Groep 6</SelectItem>
+                  <SelectItem value="7">Groep 7</SelectItem>
+                  <SelectItem value="8">Groep 8</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          {/* Moeilijkheidsgraad */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Moeilijkheidsgraad
-            </label>
-            <select
-              value={moeilijkheidsgraad}
-              onChange={(e) => onMoeilijkheidsgradChange(e.target.value as any)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maitje-blue focus:border-transparent font-medium"
-            >
-              <option value="makkelijker">🟢 Makkelijker dan groepsniveau</option>
-              <option value="op_niveau">🟡 Op groepsniveau</option>
-              <option value="uitdagend">🔴 Uitdagender dan groepsniveau</option>
-            </select>
-          </div>
+            <div>
+              <Label className="text-sm font-medium">Moeilijkheidsgraad</Label>
+              <Select value={moeilijkheidsgraad} onValueChange={onMoeilijkheidsgradChange}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="makkelijker">Makkelijker dan niveau</SelectItem>
+                  <SelectItem value="op_niveau">Op niveau</SelectItem>
+                  <SelectItem value="uitdagend">Uitdagend</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          {/* Tijd per dag */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-maitje-blue" />
-              Tijd per dag: <span className="text-lg font-bold text-maitje-blue">{timePerDay} minuten</span>
-            </label>
-            <div className="space-y-2">
-              <input
-                type="range"
-                min="15"
-                max="90"
-                step="15"
+            <div>
+              <Label className="text-sm font-medium">Tijd per dag (minuten)</Label>
+              <Input
+                type="number"
                 value={timePerDay}
-                onChange={(e) => setTimePerDay(Number(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                onChange={(e) => setTimePerDay(parseInt(e.target.value) || 30)}
+                min={15}
+                max={120}
+                step={15}
               />
-              <div className="flex justify-between text-xs text-gray-500">
-                <span>15 min</span>
-                <span>30 min</span>
-                <span>45 min</span>
-                <span>60 min</span>
-                <span>75 min</span>
-                <span>90 min</span>
+            </div>
+
+            <div>
+              <Label className="text-sm font-medium">Thema (optioneel)</Label>
+              <Input
+                value={theme}
+                onChange={(e) => setTheme(e.target.value)}
+                placeholder="Bijv. Piraten, Ruimtevaart, Dieren..."
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Vakken Selectie */}
+        <div className="space-y-4">
+          <h4 className="font-semibold text-gray-800">Vakken & Onderwerpen</h4>
+          <SubjectSelector subjects={subjects} onSubjectsChange={setSubjects} />
+        </div>
+      </div>
+
+      {/* AI Personalisatie */}
+      <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-start gap-3">
+            <Sparkles className="w-5 h-5 text-purple-600 mt-0.5" />
+            <div>
+              <h4 className="font-semibold text-gray-800">AI Personalisatie</h4>
+              <p className="text-sm text-gray-600 mt-1">
+                Wanneer ingeschakeld, gebruikt de AI de extra informatie die je hebt toegevoegd bij Kind Instellingen 
+                (interessegebieden, thema's, achtergrond informatie) om het programma nog gepersonaliseerder te maken.
+              </p>
+              <div className="flex items-center gap-2 mt-2 text-xs text-purple-600">
+                <Info className="w-3 h-3" />
+                <span>Gebaseerd op jouw kind instellingen en interessegebieden</span>
               </div>
             </div>
           </div>
-
-          {/* Thema */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
-              <Palette className="w-4 h-4 text-maitje-blue" />
-              Thema (optioneel)
-            </label>
-            <input
-              type="text"
-              value={theme}
-              onChange={(e) => setTheme(e.target.value)}
-              placeholder="bijv. piraten, ruimte, dieren, ridders..."
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maitje-blue focus:border-transparent"
-            />
-            <p className="text-xs text-gray-500 mt-2">
-              💡 Thema wordt toegepast op verhalen rekenen, begrijpend lezen en woordenschat
-            </p>
-          </div>
-
-          {/* AI Personalisatie */}
-          <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg">
-            <input
-              type="checkbox"
-              id="ai-personalization"
-              checked={useAIPersonalization}
-              onChange={(e) => setUseAIPersonalization(e.target.checked)}
-              className="w-5 h-5 text-maitje-blue focus:ring-maitje-blue border-gray-300 rounded"
-            />
-            <label htmlFor="ai-personalization" className="flex items-center gap-2 text-sm text-gray-700">
-              <Brain className="w-4 h-4 text-maitje-blue" />
-              AI Personalisatie gebruiken
-            </label>
-          </div>
-        </div>
-
-        {/* Vakgebieden */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Brain className="w-5 h-5 text-maitje-blue" />
-            <h4 className="font-semibold text-gray-800">Vakgebieden</h4>
-          </div>
-
-          <SubjectSelector
-            subjects={subjects}
-            onSubjectToggle={handleSubjectToggle}
-            onSubtopicToggle={handleSubtopicToggle}
+          <Switch
+            checked={useAIPersonalization}
+            onCheckedChange={setUseAIPersonalization}
           />
         </div>
       </div>
 
-      {/* Generate Button */}
-      <div className="mt-8 pt-6 border-t border-gray-200">
+      {/* Actie Knoppen */}
+      <div className="flex justify-between items-center mt-6">
+        <div>
+          {showDeleteButton && onDeleteProgram && (
+            <Button
+              onClick={onDeleteProgram}
+              variant="outline"
+              className="text-red-600 border-red-200 hover:bg-red-50"
+            >
+              Programma Verwijderen
+            </Button>
+          )}
+        </div>
         <Button
           onClick={handleGenerate}
           disabled={isGenerating}
-          className="w-full bg-maitje-blue hover:bg-maitje-blue/90 text-white py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+          className="maitje-button"
         >
           {isGenerating ? (
-            <div className="flex items-center gap-3">
-              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              Programma genereren...
-            </div>
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+              Genereren...
+            </>
           ) : (
-            <div className="flex items-center gap-3">
-              <Wand2 className="w-6 h-6" />
-              ✨ Genereer AI Weekprogramma
-            </div>
+            <>
+              <Wand2 className="w-4 h-4 mr-2" />
+              Genereer AI Programma
+            </>
           )}
         </Button>
       </div>

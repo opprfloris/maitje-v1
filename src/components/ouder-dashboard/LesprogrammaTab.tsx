@@ -10,6 +10,7 @@ import GenerationAnimation from './lesson-program/GenerationAnimation';
 import WeekProgramDisplay from './lesson-program/WeekProgramDisplay';
 import { useProgramGenerator, GenerationSettings } from '@/hooks/useProgramGenerator';
 import { useProgramManager } from '@/hooks/useProgramManager';
+import { getCurrentWeek } from '@/utils/weekUtils';
 
 const LesprogrammaTab = () => {
   const { user } = useAuth();
@@ -23,13 +24,6 @@ const LesprogrammaTab = () => {
   const [currentGenerationStep, setCurrentGenerationStep] = useState('');
   const [selectedDayData, setSelectedDayData] = useState<any>(null);
   const [isDayPopupOpen, setIsDayPopupOpen] = useState(false);
-
-  function getCurrentWeek() {
-    const now = new Date();
-    const start = new Date(now.getFullYear(), 0, 1);
-    const days = Math.floor((now.getTime() - start.getTime()) / (24 * 60 * 60 * 1000));
-    return Math.ceil((days + start.getDay() + 1) / 7);
-  }
 
   useEffect(() => {
     if (user) {
@@ -80,31 +74,6 @@ const LesprogrammaTab = () => {
     setIsDayPopupOpen(true);
   };
 
-  const deleteCurrentProgram = async () => {
-    if (!user || !currentWeekData) return;
-
-    if (!confirm(`Weet je zeker dat je het programma voor week ${selectedWeek} wilt verwijderen?`)) {
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('weekly_programs')
-        .delete()
-        .eq('id', currentWeekData.id);
-
-      if (error) {
-        throw error;
-      }
-
-      toast.success('Weekprogramma verwijderd');
-      loadWeekProgrammas();
-    } catch (error) {
-      console.error('Error deleting program:', error);
-      toast.error('Fout bij verwijderen programma');
-    }
-  };
-
   const programGenerator = useProgramGenerator({
     selectedWeek,
     selectedYear,
@@ -145,13 +114,14 @@ const LesprogrammaTab = () => {
         onMoeilijkheidsgradChange={setMoeilijkheidsgraad}
         onGenerateProgram={programGenerator.generateProgramWithAI}
         isGenerating={isGenerating}
-        onDeleteProgram={deleteCurrentProgram}
+        onDeleteProgram={programManager.deleteProgram}
         showDeleteButton={!!currentWeekData}
       />
 
       <WeekProgramDisplay
         currentWeekData={currentWeekData}
         selectedWeek={selectedWeek}
+        selectedYear={selectedYear}
         isCurrentOrFutureWeek={isCurrentOrFutureWeek}
         onPublishProgram={programManager.publishProgram}
         onReplaceProgram={() => programGenerator.generateProgramWithAI({
@@ -164,6 +134,7 @@ const LesprogrammaTab = () => {
           useAIPersonalization: true,
           theme: ''
         })}
+        onDeleteProgram={programManager.deleteProgram}
         onDayClick={handleDayClick}
       />
 

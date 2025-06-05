@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { User, Tag, X, Plus, Save, Bell } from 'lucide-react';
+import { User, Tag, X, Plus, Save, Info, Star, Heart } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -12,9 +12,19 @@ const KindInstellingenTab = () => {
   const [huidigLevel, setHuidigLevel] = useState(5);
   const [interessegebieden, setInteressegebieden] = useState<string[]>([]);
   const [nieuwInteresse, setNieuwInteresse] = useState('');
-  const [weekelijksRapport, setWeekelijksRapport] = useState(true);
-  const [levelNotificaties, setLevelNotificaties] = useState(true);
+  const [selectedCategorie, setSelectedCategorie] = useState('');
+  const [achtergrondInfo, setAchtergrondInfo] = useState('');
+  const [extraThemas, setExtraThemas] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const interesseCategorieën = [
+    { naam: 'Dieren', icon: '🐾', voorbeelden: ['Dinosaurussen', 'Huisdieren', 'Wilde dieren', 'Zeedieren'] },
+    { naam: 'Sport', icon: '⚽', voorbeelden: ['Voetbal', 'Tennis', 'Zwemmen', 'Fietsen'] },
+    { naam: 'Wetenschap', icon: '🔬', voorbeelden: ['Ruimtevaart', 'Experimenten', 'Planeten', 'Natuur'] },
+    { naam: 'Kunst & Creativiteit', icon: '🎨', voorbeelden: ['Tekenen', 'Muziek', 'Dans', 'Knutselen'] },
+    { naam: 'Technologie', icon: '💻', voorbeelden: ['Computers', 'Robots', 'Games', 'Apps'] },
+    { naam: 'Avontuur', icon: '🗺️', voorbeelden: ['Piraten', 'Ridders', 'Ontdekkingsreizigers', 'Sprookjes'] }
+  ];
 
   console.log('Kind instellingen tab loaded, profile:', profile);
 
@@ -22,53 +32,33 @@ const KindInstellingenTab = () => {
     if (profile) {
       setKindNaam(profile.child_name || '');
     }
-    loadInteressegebieden();
-    loadPrivacySettings();
+    loadKindData();
   }, [profile]);
 
-  const loadInteressegebieden = async () => {
+  const loadKindData = async () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
+      // Load interessegebieden
+      const { data: interests, error: interestsError } = await supabase
         .from('user_interests')
         .select('interest_name')
         .eq('user_id', user.id);
 
-      if (error) {
-        console.error('Error loading interests:', error);
-        return;
+      if (interestsError) {
+        console.error('Error loading interests:', interestsError);
+      } else if (interests) {
+        setInteressegebieden(interests.map(item => item.interest_name));
       }
 
-      if (data) {
-        setInteressegebieden(data.map(item => item.interest_name));
-      }
+      // Load extra informatie (we'll store this in a new way)
+      // For now, we'll use localStorage to store extra info until we add it to the database
+      const storedAchtergrond = localStorage.getItem(`achtergrond_${user.id}`) || '';
+      const storedThemas = localStorage.getItem(`themas_${user.id}`) || '';
+      setAchtergrondInfo(storedAchtergrond);
+      setExtraThemas(storedThemas);
     } catch (error) {
-      console.error('Error loading interests:', error);
-    }
-  };
-
-  const loadPrivacySettings = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('user_privacy_settings')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error loading privacy settings:', error);
-        return;
-      }
-
-      if (data) {
-        setWeekelijksRapport(data.weekly_reports);
-        setLevelNotificaties(data.level_change_notifications);
-      }
-    } catch (error) {
-      console.error('Error loading privacy settings:', error);
+      console.error('Error loading kind data:', error);
     }
   };
 
@@ -93,11 +83,11 @@ const KindInstellingenTab = () => {
     }
   };
 
-  const addInteresse = async () => {
-    if (!nieuwInteresse.trim() || !user) return;
+  const addInteresse = async (interesse?: string) => {
+    const interesseToAdd = interesse || nieuwInteresse.trim();
+    if (!interesseToAdd || !user) return;
 
-    const interesse = nieuwInteresse.trim();
-    if (interessegebieden.includes(interesse)) {
+    if (interessegebieden.includes(interesseToAdd)) {
       toast.error('Dit interessegebied is al toegevoegd');
       return;
     }
@@ -107,14 +97,14 @@ const KindInstellingenTab = () => {
         .from('user_interests')
         .insert({
           user_id: user.id,
-          interest_name: interesse
+          interest_name: interesseToAdd
         });
 
       if (error) {
         throw error;
       }
 
-      setInteressegebieden([...interessegebieden, interesse]);
+      setInteressegebieden([...interessegebieden, interesseToAdd]);
       setNieuwInteresse('');
       toast.success('Interessegebied toegevoegd');
     } catch (error) {
@@ -145,33 +135,13 @@ const KindInstellingenTab = () => {
     }
   };
 
-  const saveNotificatieSettings = async () => {
+  const saveExtraInfo = () => {
     if (!user) return;
 
-    setIsLoading(true);
-    try {
-      const settingsData = {
-        user_id: user.id,
-        weekly_reports: weekelijksRapport,
-        level_change_notifications: levelNotificaties,
-        updated_at: new Date().toISOString()
-      };
-
-      const { error } = await supabase
-        .from('user_privacy_settings')
-        .upsert(settingsData);
-
-      if (error) {
-        throw error;
-      }
-
-      toast.success('Notificatie-instellingen opgeslagen');
-    } catch (error) {
-      console.error('Error saving notification settings:', error);
-      toast.error('Fout bij opslaan instellingen');
-    } finally {
-      setIsLoading(false);
-    }
+    // Store in localStorage for now
+    localStorage.setItem(`achtergrond_${user.id}`, achtergrondInfo);
+    localStorage.setItem(`themas_${user.id}`, extraThemas);
+    toast.success('Extra informatie opgeslagen');
   };
 
   return (
@@ -244,107 +214,141 @@ const KindInstellingenTab = () => {
         </div>
       </div>
 
-      {/* Interessegebieden */}
+      {/* Achtergrond Informatie */}
+      <div className="maitje-card">
+        <div className="flex items-center gap-3 mb-4">
+          <Info className="w-6 h-6 text-blue-500" />
+          <h3 className="text-xl font-nunito font-bold text-gray-800">Achtergrond Informatie Kind</h3>
+        </div>
+        
+        <p className="text-gray-600 mb-4">
+          Voeg extra informatie toe over uw kind die kan helpen bij het personaliseren van de leeservaring.
+        </p>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Algemene Achtergrond</label>
+            <textarea
+              value={achtergrondInfo}
+              onChange={(e) => setAchtergrondInfo(e.target.value)}
+              placeholder="Bijv. Mijn kind houdt van puzzels, heeft moeite met concentratie, werkt het beste in de ochtend..."
+              rows={4}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:border-maitje-green focus:outline-none resize-vertical"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Extra Thema's & Voorkeuren</label>
+            <textarea
+              value={extraThemas}
+              onChange={(e) => setExtraThemas(e.target.value)}
+              placeholder="Bijv. Avontuurlijke verhalen, fantasie werelden, superhelden, prinsessen..."
+              rows={3}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:border-maitje-green focus:outline-none resize-vertical"
+            />
+          </div>
+
+          <button
+            onClick={saveExtraInfo}
+            className="maitje-button"
+          >
+            <Save className="w-4 h-4 mr-2" />
+            Achtergrond Informatie Opslaan
+          </button>
+        </div>
+      </div>
+
+      {/* Uitgebreide Interessegebieden */}
       <div className="maitje-card">
         <div className="flex items-center gap-3 mb-4">
           <Tag className="w-6 h-6 text-purple-500" />
           <h3 className="text-xl font-nunito font-bold text-gray-800">Interessegebieden & Thema's</h3>
         </div>
         
-        <p className="text-gray-600 mb-4">
-          Voeg interessegebieden toe om oefeningen interessanter te maken voor uw kind.
+        <p className="text-gray-600 mb-6">
+          Kies interessegebieden om oefeningen en verhalen nog interessanter te maken voor uw kind. Deze informatie wordt gebruikt voor AI personalisatie.
         </p>
 
-        {/* Toevoegen van nieuwe interesse */}
-        <div className="flex gap-3 mb-4">
-          <input
-            type="text"
-            value={nieuwInteresse}
-            onChange={(e) => setNieuwInteresse(e.target.value)}
-            placeholder="Bijv. Dinosaurussen, Ruimtevaart, Voetbal..."
-            className="flex-1 p-3 border border-gray-300 rounded-lg focus:border-maitje-green focus:outline-none"
-            onKeyPress={(e) => e.key === 'Enter' && addInteresse()}
-          />
-          <button
-            onClick={addInteresse}
-            className="maitje-button px-6"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Toevoegen
-          </button>
+        {/* Categorieën */}
+        <div className="mb-6">
+          <h4 className="text-lg font-semibold text-gray-800 mb-4">Kies uit Categorieën</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {interesseCategorieën.map((categorie, index) => (
+              <div key={index} className="border border-gray-200 rounded-lg p-4 hover:border-maitje-green transition-colors">
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-2xl">{categorie.icon}</span>
+                  <h5 className="font-semibold text-gray-800">{categorie.naam}</h5>
+                </div>
+                <div className="space-y-2">
+                  {categorie.voorbeelden.map((voorbeeld, vIndex) => (
+                    <button
+                      key={vIndex}
+                      onClick={() => addInteresse(voorbeeld)}
+                      disabled={interessegebieden.includes(voorbeeld)}
+                      className={`w-full text-left p-2 rounded text-sm transition-colors ${
+                        interessegebieden.includes(voorbeeld)
+                          ? 'bg-green-50 text-green-700 cursor-not-allowed'
+                          : 'bg-gray-50 hover:bg-maitje-green/10 text-gray-700'
+                      }`}
+                    >
+                      {interessegebieden.includes(voorbeeld) && <Star className="w-3 h-3 inline mr-1" />}
+                      {voorbeeld}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Lijst van interessegebieden */}
-        <div className="flex flex-wrap gap-2">
-          {interessegebieden.map((interesse, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-2 bg-maitje-green/10 text-maitje-green px-3 py-2 rounded-full border border-maitje-green/20"
+        {/* Eigen interesse toevoegen */}
+        <div className="mb-6">
+          <h4 className="text-lg font-semibold text-gray-800 mb-4">Eigen Interesse Toevoegen</h4>
+          <div className="flex gap-3">
+            <input
+              type="text"
+              value={nieuwInteresse}
+              onChange={(e) => setNieuwInteresse(e.target.value)}
+              placeholder="Bijv. Kastelen, Draken, Koken..."
+              className="flex-1 p-3 border border-gray-300 rounded-lg focus:border-maitje-green focus:outline-none"
+              onKeyPress={(e) => e.key === 'Enter' && addInteresse()}
+            />
+            <button
+              onClick={() => addInteresse()}
+              className="maitje-button px-6"
             >
-              <Tag className="w-4 h-4" />
-              <span className="font-medium">{interesse}</span>
-              <button
-                onClick={() => removeInteresse(interesse)}
-                className="text-red-500 hover:text-red-700 ml-1"
+              <Plus className="w-4 h-4 mr-2" />
+              Toevoegen
+            </button>
+          </div>
+        </div>
+
+        {/* Geselecteerde interessegebieden */}
+        <div>
+          <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <Heart className="w-5 h-5 text-red-500" />
+            Geselecteerde Interessegebieden ({interessegebieden.length})
+          </h4>
+          <div className="flex flex-wrap gap-3">
+            {interessegebieden.map((interesse, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-2 bg-maitje-green/10 text-maitje-green px-4 py-2 rounded-full border border-maitje-green/20"
               >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          ))}
-          {interessegebieden.length === 0 && (
-            <p className="text-gray-500 italic">Nog geen interessegebieden toegevoegd</p>
-          )}
-        </div>
-      </div>
-
-      {/* Notificatievoorkeuren */}
-      <div className="maitje-card">
-        <div className="flex items-center gap-3 mb-4">
-          <Bell className="w-6 h-6 text-blue-500" />
-          <h3 className="text-xl font-nunito font-bold text-gray-800">Notificatievoorkeuren</h3>
-        </div>
-        
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-semibold text-gray-800">Wekelijks voortgangsrapport</h4>
-              <p className="text-sm text-gray-600">Ontvang elke week een samenvatting van de voortgang van uw kind</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={weekelijksRapport}
-                onChange={(e) => setWeekelijksRapport(e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-maitje-green/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-maitje-green"></div>
-            </label>
+                <Tag className="w-4 h-4" />
+                <span className="font-medium">{interesse}</span>
+                <button
+                  onClick={() => removeInteresse(interesse)}
+                  className="text-red-500 hover:text-red-700 ml-1"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+            {interessegebieden.length === 0 && (
+              <p className="text-gray-500 italic">Nog geen interessegebieden geselecteerd</p>
+            )}
           </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-semibold text-gray-800">Niveau verandering melding</h4>
-              <p className="text-sm text-gray-600">Krijg een melding wanneer uw kind een nieuw niveau bereikt</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={levelNotificaties}
-                onChange={(e) => setLevelNotificaties(e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-maitje-green/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-maitje-green"></div>
-            </label>
-          </div>
-
-          <button
-            onClick={saveNotificatieSettings}
-            disabled={isLoading}
-            className="maitje-button disabled:opacity-50"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            {isLoading ? 'Opslaan...' : 'Notificatie-instellingen Opslaan'}
-          </button>
         </div>
       </div>
     </div>

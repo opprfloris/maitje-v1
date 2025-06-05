@@ -187,6 +187,47 @@ const ToolInstellingenTab = () => {
         </div>
       </div>
 
+      {/* Notification Settings */}
+      <div className="maitje-card">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 bg-maitje-green rounded-xl flex items-center justify-center">
+            <Bell className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h3 className="text-xl font-nunito font-bold text-gray-800">Notificatie Voorkeuren</h3>
+            <p className="text-gray-600">Kies welke meldingen je wilt ontvangen</p>
+          </div>
+        </div>
+        
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-maitje-cream rounded-xl">
+            <div className="space-y-0.5">
+              <Label className="text-base font-semibold">Wekelijkse voortgangsrapporten</Label>
+              <p className="text-sm text-gray-600">
+                Ontvang elke week een samenvatting van de voortgang van uw kind per email
+              </p>
+            </div>
+            <Switch
+              checked={privacySettings.weekly_reports}
+              onCheckedChange={(value) => updatePrivacySetting('weekly_reports', value)}
+            />
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-maitje-cream rounded-xl">
+            <div className="space-y-0.5">
+              <Label className="text-base font-semibold">Niveau wijziging meldingen</Label>
+              <p className="text-sm text-gray-600">
+                Krijg een melding wanneer uw kind een nieuw niveau bereikt
+              </p>
+            </div>
+            <Switch
+              checked={privacySettings.level_change_notifications}
+              onCheckedChange={(value) => updatePrivacySetting('level_change_notifications', value)}
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Privacy Settings */}
       <div className="maitje-card">
         <div className="flex items-center gap-3 mb-6">
@@ -223,47 +264,6 @@ const ToolInstellingenTab = () => {
             <Switch
               checked={privacySettings.data_collection_personalization}
               onCheckedChange={(value) => updatePrivacySetting('data_collection_personalization', value)}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Notification Settings */}
-      <div className="maitje-card">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 bg-maitje-green rounded-xl flex items-center justify-center">
-            <Bell className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h3 className="text-xl font-nunito font-bold text-gray-800">Notificatie Instellingen</h3>
-            <p className="text-gray-600">Kies welke meldingen je wilt ontvangen</p>
-          </div>
-        </div>
-        
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-maitje-cream rounded-xl">
-            <div className="space-y-0.5">
-              <Label className="text-base font-semibold">Wekelijkse rapporten</Label>
-              <p className="text-sm text-gray-600">
-                Ontvang wekelijkse voortgangsrapporten per email
-              </p>
-            </div>
-            <Switch
-              checked={privacySettings.weekly_reports}
-              onCheckedChange={(value) => updatePrivacySetting('weekly_reports', value)}
-            />
-          </div>
-
-          <div className="flex items-center justify-between p-4 bg-maitje-cream rounded-xl">
-            <div className="space-y-0.5">
-              <Label className="text-base font-semibold">Niveau wijziging meldingen</Label>
-              <p className="text-sm text-gray-600">
-                Krijg een melding wanneer je kind een niveau omhoog gaat
-              </p>
-            </div>
-            <Switch
-              checked={privacySettings.level_change_notifications}
-              onCheckedChange={(value) => updatePrivacySetting('level_change_notifications', value)}
             />
           </div>
         </div>

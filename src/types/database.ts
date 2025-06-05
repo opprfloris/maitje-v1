@@ -1,3 +1,4 @@
+
 export type Profile = {
   id: string;
   email: string;
@@ -132,6 +133,9 @@ export type FeedbackSession = {
   test_program_data: any[];
   ai_analysis?: string;
   status: 'in_progress' | 'completed' | 'analyzed';
+  generation_settings?: any;
+  user_notes?: string;
+  feedback_completed?: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -147,6 +151,11 @@ export type QuestionFeedback = {
   feedback_category: 'good' | 'incorrect' | 'unclear' | 'too_easy' | 'too_hard';
   user_feedback?: string;
   ai_feedback?: string;
+  thumbs_rating?: -1 | 1; // -1 for down, 1 for up
+  difficulty_rating?: 'too_easy' | 'just_right' | 'too_hard';
+  clarity_rating?: 'clear' | 'somewhat_clear' | 'unclear';
+  question_order?: number;
+  exercise_type?: string;
   created_at: string;
 };
 

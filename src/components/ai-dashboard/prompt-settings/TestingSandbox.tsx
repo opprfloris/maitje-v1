@@ -26,6 +26,7 @@ const TestingSandbox: React.FC<TestingSandboxProps> = ({
   const [generatedProgram, setGeneratedProgram] = useState<any[] | null>(null);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState('');
+  const [generationSettings, setGenerationSettings] = useState<any>(null);
 
   const getCurrentWeek = () => {
     const now = new Date();
@@ -43,6 +44,7 @@ const TestingSandbox: React.FC<TestingSandboxProps> = ({
     setIsGenerating(true);
     setGenerationProgress(0);
     setCurrentStep('Test programma voorbereiden...');
+    setGenerationSettings(settings);
 
     try {
       setGenerationProgress(20);
@@ -83,6 +85,18 @@ const TestingSandbox: React.FC<TestingSandboxProps> = ({
         setIsGenerating(false);
         setGenerationProgress(0);
         setCurrentStep('');
+        
+        // Show success notification with instruction
+        toast.success('Weekprogramma gegenereerd! Ga naar Feedback Analyse tab om dit programma te analyseren', {
+          duration: 5000,
+          action: {
+            label: 'Ga naar Feedback Analyse',
+            onClick: () => {
+              // This would need to be passed from parent to switch tabs
+              console.log('Switch to feedback analysis tab');
+            }
+          }
+        });
       }, 1000);
 
     } catch (error) {
@@ -95,7 +109,7 @@ const TestingSandbox: React.FC<TestingSandboxProps> = ({
   };
 
   const saveAsSession = async () => {
-    if (!user || !activePrompt || !generatedProgram || !sessionName.trim()) {
+    if (!user || !activePrompt || !generatedProgram || !sessionName.trim() || !generationSettings) {
       toast.error('Vul alle vereiste velden in');
       return;
     }
@@ -108,6 +122,7 @@ const TestingSandbox: React.FC<TestingSandboxProps> = ({
           prompt_version_id: activePrompt.id,
           session_name: sessionName,
           test_program_data: generatedProgram,
+          generation_settings: generationSettings,
           status: 'in_progress'
         });
 
@@ -115,9 +130,10 @@ const TestingSandbox: React.FC<TestingSandboxProps> = ({
         throw error;
       }
 
-      toast.success('Test sessie opgeslagen');
+      toast.success('Test sessie opgeslagen voor feedback analyse');
       setSessionName('');
       setGeneratedProgram(null);
+      setGenerationSettings(null);
       onCreateSession();
     } catch (error) {
       console.error('Error saving session:', error);

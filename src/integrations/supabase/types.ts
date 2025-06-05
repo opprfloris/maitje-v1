@@ -295,6 +295,8 @@ export type Database = {
         Row: {
           ai_analysis: string | null
           created_at: string
+          feedback_completed: boolean | null
+          generation_settings: Json | null
           id: string
           prompt_version_id: string
           session_name: string
@@ -302,10 +304,13 @@ export type Database = {
           test_program_data: Json
           updated_at: string
           user_id: string
+          user_notes: string | null
         }
         Insert: {
           ai_analysis?: string | null
           created_at?: string
+          feedback_completed?: boolean | null
+          generation_settings?: Json | null
           id?: string
           prompt_version_id: string
           session_name: string
@@ -313,10 +318,13 @@ export type Database = {
           test_program_data?: Json
           updated_at?: string
           user_id: string
+          user_notes?: string | null
         }
         Update: {
           ai_analysis?: string | null
           created_at?: string
+          feedback_completed?: boolean | null
+          generation_settings?: Json | null
           id?: string
           prompt_version_id?: string
           session_name?: string
@@ -324,6 +332,7 @@ export type Database = {
           test_program_data?: Json
           updated_at?: string
           user_id?: string
+          user_notes?: string | null
         }
         Relationships: [
           {
@@ -544,41 +553,56 @@ export type Database = {
       question_feedback: {
         Row: {
           ai_feedback: string | null
+          clarity_rating: string | null
           correct_answer: string
           created_at: string
           day_name: string
+          difficulty_rating: string | null
           exercise_title: string
+          exercise_type: string | null
           feedback_category: string
           id: string
+          question_order: number | null
           question_text: string
           session_id: string
           subject_type: string
+          thumbs_rating: number | null
           user_feedback: string | null
         }
         Insert: {
           ai_feedback?: string | null
+          clarity_rating?: string | null
           correct_answer: string
           created_at?: string
           day_name: string
+          difficulty_rating?: string | null
           exercise_title: string
+          exercise_type?: string | null
           feedback_category: string
           id?: string
+          question_order?: number | null
           question_text: string
           session_id: string
           subject_type: string
+          thumbs_rating?: number | null
           user_feedback?: string | null
         }
         Update: {
           ai_feedback?: string | null
+          clarity_rating?: string | null
           correct_answer?: string
           created_at?: string
           day_name?: string
+          difficulty_rating?: string | null
           exercise_title?: string
+          exercise_type?: string | null
           feedback_category?: string
           id?: string
+          question_order?: number | null
           question_text?: string
           session_id?: string
           subject_type?: string
+          thumbs_rating?: number | null
           user_feedback?: string | null
         }
         Relationships: [

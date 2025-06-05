@@ -10,7 +10,7 @@ export interface WeekProgramProgress {
   program_id: string;
   current_day: number;
   completed_days: number[];
-  day_progress: Record<string, any>;
+  day_progress: any; // Changed from Record<string, any> to any to match Supabase Json type
   started_at: string;
   completed_at?: string;
   total_time_spent: number;

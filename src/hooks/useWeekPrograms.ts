@@ -73,6 +73,10 @@ export const useWeekPrograms = (childId?: string) => {
     }
   };
 
+  const getProgramByWeek = (year: number, weekNumber: number): WeekProgram | null => {
+    return programs.find(p => p.year === year && p.week_number === weekNumber) || null;
+  };
+
   useEffect(() => {
     fetchPrograms();
   }, [user, childId]);
@@ -82,5 +86,6 @@ export const useWeekPrograms = (childId?: string) => {
     loading,
     refetch: fetchPrograms,
     getProgramById,
+    getProgramByWeek,
   };
 };

@@ -7,6 +7,7 @@ export interface ExerciseSettings {
   duration_minutes: number;
   difficulty_level: string;
   theme?: string;
+  [key: string]: any; // Add index signature for Json compatibility
 }
 
 export interface GeneratedExercise {
@@ -16,6 +17,7 @@ export interface GeneratedExercise {
   correct_answer: string;
   explanation?: string;
   type: string;
+  [key: string]: any; // Add index signature for Json compatibility
 }
 
 export const useExerciseGenerator = () => {
@@ -35,7 +37,7 @@ export const useExerciseGenerator = () => {
           difficulty_level: settings.difficulty_level,
           theme: settings.theme,
           duration_minutes: settings.duration_minutes,
-          settings: settings,
+          settings: settings as any, // Cast to any for Json compatibility
         })
         .select()
         .single();
@@ -48,7 +50,7 @@ export const useExerciseGenerator = () => {
       // Update sessie met gegenereerde oefeningen
       const { error: updateError } = await supabase
         .from('daily_exercise_sessions')
-        .update({ exercises })
+        .update({ exercises: exercises as any }) // Cast to any for Json compatibility
         .eq('id', sessionData.id);
 
       if (updateError) throw updateError;
@@ -101,7 +103,7 @@ export const useExerciseGenerator = () => {
       // Update progress
       const { error } = await supabase
         .from('daily_exercise_sessions')
-        .update({ progress })
+        .update({ progress: progress as any }) // Cast to any for Json compatibility
         .eq('id', sessionId);
 
       if (error) throw error;

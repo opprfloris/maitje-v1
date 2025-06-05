@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, Clock, CheckCircle, Star, Trophy, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -22,15 +21,15 @@ const WeekProgramMode: React.FC<WeekProgramModeProps> = ({
   selectedHelper,
   onExit
 }) => {
-  const { getProgramByWeek } = useWeekPrograms();
+  const { getProgramByWeek, getProgramById } = useWeekPrograms();
   const { getCurrentProgress, updateDayProgress } = useWeekProgramProgress(childId);
   
   const [currentDay, setCurrentDay] = useState(1);
   const [dayActivities, setDayActivities] = useState<any[]>([]);
   const [completedActivities, setCompletedActivities] = useState<Set<number>>(new Set());
+  const [program, setProgram] = useState<any>(null);
 
   const progress = getCurrentProgress(programId);
-  const program = progress ? getProgramByWeek(progress.started_at ? new Date(progress.started_at).getFullYear() : new Date().getFullYear(), getCurrentWeekNumber()) : null;
 
   // Helper function to get current week number
   function getCurrentWeekNumber(): number {
@@ -39,6 +38,25 @@ const WeekProgramMode: React.FC<WeekProgramModeProps> = ({
     const days = Math.floor((now.getTime() - start.getTime()) / (24 * 60 * 60 * 1000));
     return Math.ceil((days + start.getDay() + 1) / 7);
   }
+
+  // Load program data
+  useEffect(() => {
+    const loadProgram = async () => {
+      if (programId) {
+        const programData = await getProgramById(programId);
+        setProgram(programData);
+      } else if (progress) {
+        // Try to find by week if no specific programId
+        const weekProgram = getProgramByWeek(
+          progress.started_at ? new Date(progress.started_at).getFullYear() : new Date().getFullYear(), 
+          getCurrentWeekNumber()
+        );
+        setProgram(weekProgram);
+      }
+    };
+    
+    loadProgram();
+  }, [programId, progress, getProgramById, getProgramByWeek]);
 
   useEffect(() => {
     if (progress) {

@@ -601,6 +601,47 @@ export type Database = {
         }
         Relationships: []
       }
+      prompt_mini_sessions: {
+        Row: {
+          created_at: string | null
+          general_comments: string | null
+          generated_content: Json
+          id: string
+          overall_satisfaction: string | null
+          prompt_version_id: string | null
+          test_settings: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          general_comments?: string | null
+          generated_content?: Json
+          id?: string
+          overall_satisfaction?: string | null
+          prompt_version_id?: string | null
+          test_settings?: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          general_comments?: string | null
+          generated_content?: Json
+          id?: string
+          overall_satisfaction?: string | null
+          prompt_version_id?: string | null
+          test_settings?: Json
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prompt_mini_sessions_prompt_version_id_fkey"
+            columns: ["prompt_version_id"]
+            isOneToOne: false
+            referencedRelation: "prompt_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prompt_templates: {
         Row: {
           category: string
@@ -636,6 +677,56 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      prompt_test_feedback: {
+        Row: {
+          clarity_rating: string | null
+          correctness_rating: string | null
+          created_at: string | null
+          difficulty_rating: string | null
+          exercise_data: Json
+          exercise_notes: string | null
+          id: string
+          prompt_version_id: string | null
+          quality_stars: number | null
+          relevance_rating: string | null
+          session_id: string
+        }
+        Insert: {
+          clarity_rating?: string | null
+          correctness_rating?: string | null
+          created_at?: string | null
+          difficulty_rating?: string | null
+          exercise_data?: Json
+          exercise_notes?: string | null
+          id?: string
+          prompt_version_id?: string | null
+          quality_stars?: number | null
+          relevance_rating?: string | null
+          session_id: string
+        }
+        Update: {
+          clarity_rating?: string | null
+          correctness_rating?: string | null
+          created_at?: string | null
+          difficulty_rating?: string | null
+          exercise_data?: Json
+          exercise_notes?: string | null
+          id?: string
+          prompt_version_id?: string | null
+          quality_stars?: number | null
+          relevance_rating?: string | null
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prompt_test_feedback_prompt_version_id_fkey"
+            columns: ["prompt_version_id"]
+            isOneToOne: false
+            referencedRelation: "prompt_versions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       prompt_versions: {
         Row: {

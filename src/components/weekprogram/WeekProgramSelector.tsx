@@ -12,7 +12,7 @@ interface WeekProgramSelectorProps {
 }
 
 const WeekProgramSelector = ({ childId, onSelectProgram, onBack }: WeekProgramSelectorProps) => {
-  const { weekPrograms, loading } = useWeekPrograms(childId);
+  const { programs: weekPrograms, loading } = useWeekPrograms(childId);
   const [selectedView, setSelectedView] = useState<'available' | 'completed'>('available');
 
   const availablePrograms = weekPrograms.filter(program => program.status === 'active' || program.status === 'in_progress');
